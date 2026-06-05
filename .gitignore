@@ -1,0 +1,20 @@
+# Xcode
+*.xcuserdata
+*.xcworkspace/xcuserdata
+DerivedData/
+build/
+
+# macOS
+.DS_Store
+
+# Swift Package Manager
+.build/
+Package.resolved
+
+# Wrangler / Cloudflare
+workers/namegenie-worker/.wrangler/
+workers/namegenie-worker/node_modules/
+
+# Misc
+*.log
+.env
