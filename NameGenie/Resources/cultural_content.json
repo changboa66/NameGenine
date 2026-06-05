@@ -1,0 +1,37 @@
+[
+  {
+    "id": "naming-traditions",
+    "title": "How Chinese Names Work",
+    "body": "Chinese names traditionally consist of a family name (surname, xìng) followed by a given name (míng). Most surnames are one character, while given names are typically one or two characters. Unlike Western names, the family name comes first — for example, in the name 李小龙 (Lǐ Xiǎolóng), 李 is the family name and 小龙 is the given name. The given name is where parents express their hopes and blessings for their child, often choosing characters with positive meanings like strength, wisdom, or beauty.",
+    "topic": "Naming Traditions",
+    "example": "李 (Lǐ) is one of the most common Chinese surnames, shared by over 90 million people worldwide."
+  },
+  {
+    "id": "character-origins",
+    "title": "The Beauty of Chinese Characters",
+    "body": "Each Chinese character (字, zì) is a world of meaning. Unlike alphabetic writing where letters represent sounds, Chinese characters are logograms — each one carries meaning directly. Many characters started as pictographs: 山 (shān) was a drawing of a mountain, 水 (shuǐ) depicted flowing water. Others combine a meaning element (radical) with a sound hint. This is why choosing a Chinese name is so powerful — every character you pick adds its own layer of meaning to your name.",
+    "topic": "Character Origins",
+    "example": "The character 好 (hǎo, 'good') combines 女 (woman) and 子 (child) — a woman with a child represents something good."
+  },
+  {
+    "id": "naming-taboos",
+    "title": "Chinese Naming Taboos",
+    "body": "Chinese naming has several important taboos. First, it is traditionally considered disrespectful to use the same character as an elder family member's name. Second, names should avoid characters with negative meanings or unfortunate homophones — for example, 离 (lí, 'to leave') sounds like 'departure', and 死 (sǐ) means 'death'. Third, parents avoid names that sound too similar to common words or phrases to prevent teasing. Modern naming is more relaxed, but these cultural sensitivities still guide good name choices.",
+    "topic": "Naming Taboos",
+    "example": "The name 杜子腾 (Dù Zǐténg) would be avoided because it sounds like '肚子疼' (dùzi téng) — 'stomach ache'."
+  },
+  {
+    "id": "generational-trends",
+    "title": "Chinese Name Trends Through Decades",
+    "body": "Chinese naming styles have evolved dramatically. In the 1950s-70s, revolutionary names were popular — 建国 (Jiànguó, 'build the country'), 国强 (Guóqiáng, 'strong nation'). The 80s-90s saw a shift toward single-character names like 伟 (Wěi) and 娜 (Nà). The 2000s-2010s brought a trend of elegant two-character names using characters like 梓 (zǐ, 'catalpa'), 涵 (hán, 'gentle'), and 宇 (yǔ, 'universe'). Today's naming trends favor unique, literary names that stand out while carrying deep cultural meaning.",
+    "topic": "Generational Trends",
+    "example": "The name 子轩 (Zǐ Xuān) was among the top 10 most popular Chinese boys' names for several years in the 2010s."
+  },
+  {
+    "id": "sound-and-meaning",
+    "title": "Why Pronunciation Matters",
+    "body": "Mandarin Chinese has four tones, and the tonal quality of a name is carefully considered. A good name has a pleasant flow when spoken — avoiding awkward combinations like two consecutive third tones (which naturally change pronunciation). Many parents also consider the surname's tone when choosing the given name to create harmonious rhythm. This is why some names that look beautiful on paper may be avoided — they simply don't sound right when spoken aloud.",
+    "topic": "Sound and Meaning",
+    "example": "The name 李美美 (Lǐ Měiměi) has three third tones — in speech, it becomes Lí Méiměi, which many find too singsong."
+  }
+]

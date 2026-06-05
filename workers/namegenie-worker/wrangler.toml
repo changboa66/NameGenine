@@ -1,0 +1,9 @@
+name = "namegenie-worker"
+main = "src/index.js"
+compatibility_date = "2025-06-01"
+
+[vars]
+DEEPSEEK_MODEL = "deepseek-chat"
+
+[env.production]
+vars = { ENVIRONMENT = "production" }
