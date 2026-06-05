@@ -19,12 +19,16 @@ actor NameGenieAPI {
         self.decoder = JSONDecoder()
     }
 
-    func generateNames(preferences: GenerationPreferences) async throws -> [NameCandidate] {
+    func generateNames(preferences: GenerationPreferences, random: Bool = false) async throws -> [NameCandidate] {
         var body: [String: Any] = [
             "action": "generate",
             "gender": preferences.gender.rawValue,
             "characterCount": preferences.characterCount.rawValue,
         ]
+
+        if random {
+            body["random"] = true
+        }
 
         if !preferences.phoneticInput.isEmpty {
             body["phoneticInput"] = preferences.phoneticInput
@@ -39,7 +43,7 @@ actor NameGenieAPI {
         }
 
         let cacheKey = cacheKey(for: body)
-        if let cached = resultCache[cacheKey] {
+        if !random, let cached = resultCache[cacheKey] {
             return cached
         }
 
@@ -52,11 +56,13 @@ actor NameGenieAPI {
         let (data, _) = try await session.data(for: request)
         let response = try decoder.decode(GenerateResponse.self, from: data)
 
-        resultCache[cacheKey] = response.candidates
-        if resultCache.count > 5 {
-            let keys = resultCache.keys
-            if let oldest = keys.first {
-                resultCache.removeValue(forKey: oldest)
+        if !random {
+            resultCache[cacheKey] = response.candidates
+            if resultCache.count > 5 {
+                let keys = resultCache.keys
+                if let oldest = keys.first {
+                    resultCache.removeValue(forKey: oldest)
+                }
             }
         }
 

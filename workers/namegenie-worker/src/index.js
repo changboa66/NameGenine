@@ -31,6 +31,39 @@ Return valid JSON ONLY, no markdown, no explanation:
   ]
 }`;
 
+const RANDOM_PROMPT = `You are a Chinese naming expert. Generate 3 Chinese given names in random/surprise mode.
+
+Preferences (may be empty — fill in your own creativity if so):
+- Gender: {{gender}}
+- Character count: {{characterCount}}
+- Surname (for compatibility check): {{surname}}
+
+Rules:
+1. Return 3 names in 3 DISTINCT STYLES:
+   - First name: CLASSIC / TRADITIONAL — timeless, elegant, established characters
+   - Second name: MODERN / POPULAR — contemporary feel, trendy characters
+   - Third name: UNIQUE / LITERARY — rare characters, poetic or artistic flair
+2. Names should sound pleasant in Mandarin Chinese
+3. AVOID: 3rd-tone + 3rd-tone combinations
+4. AVOID: names that are very common in the 2010s (e.g., 子轩, 梓涵, 浩宇)
+5. AVOID: characters with negative or embarrassing homophones
+6. If gender is provided, respect it; otherwise choose freely
+7. If character count is provided, respect it; otherwise mix 2-character names
+8. If a surname is provided, ensure the full name sounds natural together
+9. Label each candidate with its style in the meaning field, e.g. "Classic — bright radiance"
+
+Return valid JSON ONLY, no markdown, no explanation:
+{
+  "candidates": [
+    {
+      "hanzi": "example",
+      "pinyin": "Lì Huá",
+      "meaning": "Classic — example meaning",
+      "relevance": 0.9
+    }
+  ]
+}`;
+
 const DETAIL_PROMPT = `You are a Chinese naming expert. Provide a detailed breakdown of the Chinese name below.
 
 Name: {{hanzi}}
@@ -102,17 +135,25 @@ export default {
       return errorResponse(400, 'Invalid JSON body');
     }
 
-    const { action, ...params } = body;
+    const { action, random, ...params } = body;
 
     let prompt;
     if (action === 'generate') {
-      prompt = buildPrompt(GENERATION_PROMPT, {
-        gender: params.gender || 'neutral',
-        phoneticInput: params.phoneticInput || '',
-        meanings: params.meanings ? params.meanings.join(', ') : '',
-        characterCount: params.characterCount || '2',
-        surname: params.surname || '',
-      });
+      if (random) {
+        prompt = buildPrompt(RANDOM_PROMPT, {
+          gender: params.gender || '',
+          characterCount: params.characterCount || '',
+          surname: params.surname || '',
+        });
+      } else {
+        prompt = buildPrompt(GENERATION_PROMPT, {
+          gender: params.gender || 'neutral',
+          phoneticInput: params.phoneticInput || '',
+          meanings: params.meanings ? params.meanings.join(', ') : '',
+          characterCount: params.characterCount || '2',
+          surname: params.surname || '',
+        });
+      }
     } else if (action === 'detail') {
       prompt = buildPrompt(DETAIL_PROMPT, {
         hanzi: params.hanzi || '',

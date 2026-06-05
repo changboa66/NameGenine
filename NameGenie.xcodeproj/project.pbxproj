@@ -39,7 +39,7 @@
 		D70CC92C793F01AF1FB21803 /* NameDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NameDetailView.swift; sourceTree = "<group>"; };
 		E58158D1F90EE55D5B529159 /* CultureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CultureView.swift; sourceTree = "<group>"; };
 		F3C82D644F53D8C10A22458C /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		F84229D96059E4AFBC30DC97 /* NameGenie.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NameGenie.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F84229D96059E4AFBC30DC97 /* NameGenie.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = NameGenie.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -152,6 +152,7 @@
 				LastUpgradeCheck = 1600;
 				TargetAttributes = {
 					7EC68924E188BF3557BB8442 = {
+						DevelopmentTeam = "";
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -217,7 +218,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = BJJSXN6S66;
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = NameGenie/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -296,7 +297,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = BJJSXN6S66;
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = NameGenie/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

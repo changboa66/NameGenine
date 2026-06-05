@@ -8,6 +8,7 @@ struct GenerateView: View {
     @State private var hasGenerated = false
     @State private var selectedName: NameCandidate?
     @State private var showDetail = false
+    @State private var isRandomMode = false
 
     var body: some View {
         NavigationStack {
@@ -16,6 +17,7 @@ struct GenerateView: View {
                     headerSection
                     preferencesSection
                     generateButton
+                    luckyButton
                     resultsSection
                 }
                 .padding(.horizontal, 20)
@@ -24,7 +26,7 @@ struct GenerateView: View {
             }
             .refreshable {
                 if !candidates.isEmpty {
-                    generate()
+                    generate(random: isRandomMode)
                 }
             }
             .toolbarBackground(.hidden, for: .navigationBar)
@@ -147,20 +149,40 @@ struct GenerateView: View {
 
     private var generateButton: some View {
         Button {
-            generate()
+            generate(random: false)
         } label: {
             HStack(spacing: 8) {
-                if isLoading {
+                if isLoading && !isRandomMode {
                     ProgressView()
                         .tint(.white)
                 }
-                Text(isLoading ? "Generating..." : "Generate Names")
+                Text(isLoading && !isRandomMode ? "Generating..." : "Generate Names")
                     .font(.system(size: 15, weight: .medium))
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 12)
             .background(Color.accentColor)
             .foregroundStyle(.white)
+            .clipShape(.rect(cornerRadius: 10))
+        }
+        .disabled(isLoading)
+    }
+
+    private var luckyButton: some View {
+        Button {
+            generate(random: true)
+        } label: {
+            HStack(spacing: 8) {
+                if isLoading && isRandomMode {
+                    ProgressView()
+                }
+                Text(isLoading && isRandomMode ? "Rolling..." : "🎲 I'm Feeling Lucky")
+                    .font(.system(size: 14, weight: .medium))
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 10)
+            .background(Color(.secondarySystemBackground))
+            .foregroundStyle(.primary)
             .clipShape(.rect(cornerRadius: 10))
         }
         .disabled(isLoading)
@@ -178,7 +200,7 @@ struct GenerateView: View {
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                 Button("Try Again") {
-                    generate()
+                    generate(random: isRandomMode)
                 }
                 .buttonStyle(.bordered)
             }
@@ -207,26 +229,41 @@ struct GenerateView: View {
                     .buttonStyle(.plain)
                 }
 
-                Button("Generate More") {
-                    generate()
+                if isRandomMode {
+                    Button("不喜欢？再摇一次 → 🎲") {
+                        generate(random: true)
+                    }
+                    .font(.system(size: 13, weight: .medium))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 8)
+                    .background(Color(.secondarySystemBackground))
+                    .clipShape(.rect(cornerRadius: 10))
+                } else {
+                    Button("Generate More") {
+                        generate(random: false)
+                    }
+                    .font(.system(size: 13, weight: .medium))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 8)
+                    .background(Color(.secondarySystemBackground))
+                    .clipShape(.rect(cornerRadius: 10))
                 }
-                .font(.system(size: 13, weight: .medium))
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 8)
-                .background(Color(.secondarySystemBackground))
-                .clipShape(.rect(cornerRadius: 10))
             }
         }
     }
 
-    private func generate() {
+    private func generate(random: Bool) {
         isLoading = true
+        isRandomMode = random
         errorMessage = nil
         candidates = []
 
         Task {
             do {
-                let result = try await NameGenieAPI.shared.generateNames(preferences: preferences)
+                let result = try await NameGenieAPI.shared.generateNames(
+                    preferences: preferences,
+                    random: random
+                )
                 candidates = result
                 hasGenerated = true
             } catch {
