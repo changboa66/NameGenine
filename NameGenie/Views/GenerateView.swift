@@ -28,7 +28,13 @@ struct GenerateViewContent: View {
                     .padding(.bottom, 16)
                 }
             }
-            .background(Color(.systemGroupedBackground))
+            .background(
+                LinearGradient(
+                    colors: [Color.accentColor.opacity(0.12), Color(.systemGroupedBackground)],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            )
             .ignoresSafeArea(edges: .top)
             .overlay(loadingOverlay)
             .animation(.easeInOut(duration: 0.25), value: isLoading)
@@ -66,8 +72,8 @@ struct GenerateViewContent: View {
                 .onAppear { pandaLoaded = true }
 
             Text("Find Your Chinese Name")
-                .font(.system(size: 15, weight: .medium))
-                .padding(.top, -8)
+                .font(.system(size: 20, weight: .semibold))
+                .padding(.top, -4)
 
             Text("Tell us about yourself and discover meaningful Chinese names")
                 .font(.system(size: 13))
@@ -80,9 +86,12 @@ struct GenerateViewContent: View {
         .padding(.bottom, 16)
         .frame(maxWidth: .infinity)
         .background(
-            Rectangle()
-                .fill(Color.accentColor.opacity(0.08))
-                .ignoresSafeArea(edges: .top)
+            LinearGradient(
+                colors: [Color.accentColor.opacity(0.15), Color.accentColor.opacity(0.02)],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea(edges: .top)
         )
     }
 
@@ -90,60 +99,61 @@ struct GenerateViewContent: View {
         VStack(spacing: 8) {
             generateCard
             meaningsCard
-            aboutYouCard
+            yourNameCard
         }
     }
 
     private var generateCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading, spacing: 8) {
-                Text("GENDER")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(.secondary)
-                Picker("Gender", selection: $preferences.gender) {
-                    ForEach(GenerationPreferences.Gender.allCases) { gender in
-                        Text(gender.label).tag(gender)
-                    }
+                HStack(spacing: 4) {
+                    Image(systemName: "person.crop.circle")
+                        .font(.system(size: 12))
+                    Text("GENDER")
                 }
-                .pickerStyle(.segmented)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(Color.accentColor)
+                CustomSegmentedPicker(
+                    selection: $preferences.gender,
+                    options: GenerationPreferences.Gender.allCases
+                ) { $0.label }
             }
 
             VStack(alignment: .leading, spacing: 8) {
-                Text("CHARACTER COUNT")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(.secondary)
-                Picker("Count", selection: $preferences.characterCount) {
-                    ForEach(GenerationPreferences.CharacterCount.allCases) { count in
-                        Text(count.label).tag(count)
-                    }
+                HStack(spacing: 4) {
+                    Image(systemName: "textformat.size")
+                        .font(.system(size: 12))
+                    Text("CHARACTER COUNT")
                 }
-                .pickerStyle(.segmented)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(Color.accentColor)
+                CustomSegmentedPicker(
+                    selection: $preferences.characterCount,
+                    options: GenerationPreferences.CharacterCount.allCases
+                ) { $0.label }
             }
 
-            VStack(alignment: .leading, spacing: 8) {
-                Text("SURNAME (OPTIONAL)")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(.secondary)
-                TextField("e.g. Wang, Li", text: $preferences.surname)
-                    .textFieldStyle(.roundedBorder)
-                    .autocorrectionDisabled()
-            }
         }
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 12)
                 .fill(Color(.systemBackground))
+                .shadow(color: .black.opacity(0.08), radius: 10, y: 2)
         )
     }
 
     private var meaningsCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("MEANINGS")
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(.secondary)
+            HStack(spacing: 4) {
+                Image(systemName: "tag")
+                    .font(.system(size: 12))
+                Text("MEANINGS")
+            }
+            .font(.system(size: 12, weight: .semibold))
+            .foregroundStyle(Color.accentColor)
 
             LazyVGrid(
-                columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 4),
+                columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 4),
                 spacing: 8
             ) {
                 ForEach(GenerationPreferences.MeaningTag.allCases) { tag in
@@ -157,10 +167,11 @@ struct GenerateViewContent: View {
                         Text(tag.englishLabel)
                             .font(.system(size: 11))
                             .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
+                            .padding(.vertical, 8)
+                            .frame(maxWidth: .infinity)
                             .background(
                                 preferences.meanings.contains(tag)
-                                    ? Color.accentColor
+                                    ? tag.color
                                     : Color(.secondarySystemBackground)
                             )
                             .foregroundStyle(
@@ -168,7 +179,7 @@ struct GenerateViewContent: View {
                                     ? .white
                                     : .primary
                             )
-                            .clipShape(.rect(cornerRadius: 16))
+                            .clipShape(.rect(cornerRadius: 6))
                     }
                 }
             }
@@ -177,13 +188,31 @@ struct GenerateViewContent: View {
         .background(
             RoundedRectangle(cornerRadius: 12)
                 .fill(Color(.systemBackground))
+                .shadow(color: .black.opacity(0.08), radius: 10, y: 2)
         )
     }
 
-    private var aboutYouCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
+    private var yourNameCard: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(spacing: 4) {
+                Image(systemName: "person.text.rectangle")
+                    .font(.system(size: 12))
+                Text("YOUR NAME")
+            }
+            .font(.system(size: 12, weight: .semibold))
+            .foregroundStyle(Color.accentColor)
+
             VStack(alignment: .leading, spacing: 8) {
-                Text("YOUR NAME / PRONUNCIATION")
+                Text("SURNAME (OPTIONAL)")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(.secondary)
+                TextField("e.g. Wang, Li", text: $preferences.surname)
+                    .textFieldStyle(.roundedBorder)
+                    .autocorrectionDisabled()
+            }
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text("PRONUNCIATION")
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(.secondary)
                 TextField("e.g. Christopher", text: $preferences.phoneticInput)
@@ -195,6 +224,7 @@ struct GenerateViewContent: View {
         .background(
             RoundedRectangle(cornerRadius: 12)
                 .fill(Color(.systemBackground))
+                .shadow(color: .black.opacity(0.08), radius: 10, y: 2)
         )
     }
 
@@ -226,7 +256,13 @@ struct GenerateViewContent: View {
                 .font(.system(size: 15, weight: .medium))
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
-                .background(Color.accentColor)
+                .background(
+                    LinearGradient(
+                        colors: [Color.accentColor, Color.purple.opacity(0.8)],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
                 .foregroundStyle(.white)
                 .clipShape(.rect(cornerRadius: 10))
         }
@@ -257,9 +293,13 @@ struct GenerateViewContent: View {
                 .padding(.vertical, 32)
         } else if !candidates.isEmpty {
             VStack(alignment: .leading, spacing: 12) {
-                Text("RESULTS")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(.secondary)
+                HStack(spacing: 4) {
+                    Image(systemName: "list.star")
+                        .font(.system(size: 12))
+                    Text("RESULTS")
+                }
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(Color.accentColor)
                     .id("results")
 
                 ForEach(candidates) { candidate in
@@ -272,7 +312,7 @@ struct GenerateViewContent: View {
                             surname: preferences.surname
                         )
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(PressButtonStyle())
                 }
 
                 if isRandomMode {
@@ -356,12 +396,32 @@ struct NameResultRow: View {
         surname.isEmpty ? candidate.pinyin : "\(surname) \(candidate.pinyin)"
     }
 
+    private var styleColor: Color {
+        switch candidate.style {
+        case "Classic": .orange
+        case "Modern": .blue
+        case "Unique": .purple
+        default: .gray
+        }
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 16) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(displayName)
-                        .font(.system(size: 22))
+                    HStack(spacing: 8) {
+                        Text(displayName)
+                            .font(.system(size: 22))
+                        if let style = candidate.style {
+                            Text(style)
+                                .font(.system(size: 9, weight: .medium))
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(styleColor)
+                                .foregroundStyle(.white)
+                                .clipShape(.rect(cornerRadius: 4))
+                        }
+                    }
                     Text(displayPinyin)
                         .font(.system(size: 12))
                         .foregroundStyle(.secondary)
@@ -369,7 +429,7 @@ struct NameResultRow: View {
 
                 Spacer()
 
-                Text(candidate.meaning)
+                Text(candidate.cleanMeaning)
                     .font(.system(size: 13))
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.trailing)
@@ -415,5 +475,44 @@ struct NameResultRow: View {
         }
         .background(Color(.systemBackground))
         .clipShape(.rect(cornerRadius: 10))
+    }
+}
+
+struct PressButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.97 : 1)
+            .animation(.easeInOut(duration: 0.15), value: configuration.isPressed)
+    }
+}
+
+struct CustomSegmentedPicker<T: Hashable & Identifiable>: View {
+    @Binding var selection: T
+    let options: [T]
+    let label: (T) -> String
+
+    var body: some View {
+        HStack(spacing: 0) {
+            ForEach(options, id: \.id) { option in
+                Button {
+                    selection = option
+                } label: {
+                    Text(label(option))
+                        .font(.system(size: 13, weight: .medium))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 7)
+                        .background(selection == option ? Color.accentColor : Color(.secondarySystemBackground))
+                        .foregroundStyle(selection == option ? .white : .primary)
+                }
+                .buttonStyle(.plain)
+
+                if option != options.last {
+                    Divider()
+                        .frame(width: 1)
+                        .background(Color(.separator))
+                }
+            }
+        }
+        .clipShape(.rect(cornerRadius: 8))
     }
 }

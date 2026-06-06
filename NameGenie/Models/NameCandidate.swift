@@ -8,6 +8,18 @@ struct NameCandidate: Codable, Identifiable, Hashable {
 
     var id: String { hanzi }
 
+    var style: String? {
+        ["Classic", "Modern", "Unique"].first { meaning.hasPrefix($0) }
+    }
+
+    var cleanMeaning: String {
+        if let range = meaning.range(of: "—") ?? meaning.range(of: "-") {
+            String(meaning[range.upperBound...]).trimmingCharacters(in: .whitespaces)
+        } else {
+            meaning
+        }
+    }
+
     func hash(into hasher: inout Hasher) {
         hasher.combine(hanzi)
     }

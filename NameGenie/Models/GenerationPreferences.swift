@@ -1,4 +1,4 @@
-import Foundation
+import SwiftUI
 
 struct GenerationPreferences {
     var gender: Gender = .neutral
@@ -60,7 +60,22 @@ struct GenerationPreferences {
             case .talent: "Talent"
             case .harmony: "Harmony"
             case .joy: "Joy"
-            case .prosperity: "Prosperity"
+            case .prosperity: "Wealth"
+            }
+        }
+
+        var color: Color {
+            switch self {
+            case .wisdom: .orange
+            case .beauty: .blue
+            case .bravery: .red
+            case .kindness: .cyan
+            case .nature: .green
+            case .strength: .brown
+            case .talent: .purple
+            case .harmony: .teal
+            case .joy: .yellow
+            case .prosperity: .indigo
             }
         }
     }
