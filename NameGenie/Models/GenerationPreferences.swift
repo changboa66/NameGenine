@@ -14,9 +14,9 @@ struct GenerationPreferences {
 
         var label: String {
             switch self {
-            case .male: "Male"
-            case .female: "Female"
-            case .neutral: "Neutral"
+            case .male: "♂ Male"
+            case .female: "♀ Female"
+            case .neutral: "○ Neutral"
             }
         }
     }

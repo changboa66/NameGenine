@@ -28,6 +28,7 @@ struct GenerateViewContent: View {
                     .padding(.bottom, 16)
                 }
             }
+            .background(Color(.systemGroupedBackground))
             .ignoresSafeArea(edges: .top)
             .overlay(loadingOverlay)
             .animation(.easeInOut(duration: 0.25), value: isLoading)
@@ -131,7 +132,7 @@ struct GenerateViewContent: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color(.secondarySystemBackground))
+                .fill(Color(.systemBackground))
         )
     }
 
@@ -160,7 +161,7 @@ struct GenerateViewContent: View {
                             .background(
                                 preferences.meanings.contains(tag)
                                     ? Color.accentColor
-                                    : Color(.tertiarySystemBackground)
+                                    : Color(.secondarySystemBackground)
                             )
                             .foregroundStyle(
                                 preferences.meanings.contains(tag)
@@ -175,7 +176,7 @@ struct GenerateViewContent: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color(.secondarySystemBackground))
+                .fill(Color(.systemBackground))
         )
     }
 
@@ -193,7 +194,7 @@ struct GenerateViewContent: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color(.secondarySystemBackground))
+                .fill(Color(.systemBackground))
         )
     }
 
@@ -412,7 +413,7 @@ struct NameResultRow: View {
             .padding(.top, 8)
             .padding(.bottom, 12)
         }
-        .background(Color(.secondarySystemBackground))
+        .background(Color(.systemBackground))
         .clipShape(.rect(cornerRadius: 10))
     }
 }
