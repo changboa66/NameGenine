@@ -5,6 +5,7 @@ struct NameDetailView: View {
     let hanzi: String
     let pinyin: String
     let meaning: String
+    var cachedDetailData: Data?
 
     @ObservedObject private var pronunciationService = PronunciationService.shared
     @State private var detail: NameDetail?
@@ -267,6 +268,10 @@ struct NameDetailView: View {
     }
 
     private func loadDetail() async {
+        if let cachedDetailData, let decoded = try? JSONDecoder().decode(NameDetail.self, from: cachedDetailData) {
+            detail = decoded
+            return
+        }
         isLoading = true
         errorMessage = nil
         do {
@@ -292,17 +297,23 @@ struct NameDetailView: View {
         if let existing = try? modelContext.fetch(descriptor).first {
             modelContext.delete(existing)
             isFavorited = false
+            try? modelContext.save()
         } else {
-            let detailData = detail.flatMap { try? JSONEncoder().encode($0) }
-            let favorite = FavoriteName(
-                hanzi: hanzi,
-                pinyin: pinyin,
-                meaning: meaning,
-                detailData: detailData
-            )
-            modelContext.insert(favorite)
-            isFavorited = true
+            Task {
+                if detail == nil {
+                    await loadDetail()
+                }
+                let detailData = detail.flatMap { try? JSONEncoder().encode($0) }
+                let favorite = FavoriteName(
+                    hanzi: hanzi,
+                    pinyin: pinyin,
+                    meaning: meaning,
+                    detailData: detailData
+                )
+                modelContext.insert(favorite)
+                isFavorited = true
+                try? modelContext.save()
+            }
         }
-        try? modelContext.save()
     }
 }

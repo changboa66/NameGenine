@@ -8,34 +8,40 @@ class PronunciationService: NSObject, ObservableObject {
     @Published var currentHanzi: String?
     @Published var currentCharIndex: Int?
 
-    private let synthesizer = AVSpeechSynthesizer()
+    private var synthesizer: AVSpeechSynthesizer
     private var version = 0
 
+    override init() {
+        synthesizer = AVSpeechSynthesizer()
+        super.init()
+    }
+
     func speak(hanzi: String, pinyin: String) {
-        if synthesizer.isSpeaking {
-            synthesizer.stopSpeaking(at: .immediate)
-        }
-        version += 1
-        let currentVersion = version
+        synthesizer.stopSpeaking(at: .immediate)
 
-        currentHanzi = hanzi
-        isSpeaking = true
-        currentCharIndex = 0
-
+        let currentVersion = version + 1
+        version = currentVersion
         let characters = Array(hanzi)
+
+        let newSynthesizer = AVSpeechSynthesizer()
+        synthesizer = newSynthesizer
 
         for char in characters {
             let utterance = AVSpeechUtterance(string: String(char))
             utterance.voice = AVSpeechSynthesisVoice(language: "zh-CN")
             utterance.rate = 0.3
             utterance.postUtteranceDelay = 0.25
-            synthesizer.speak(utterance)
+            newSynthesizer.speak(utterance)
         }
 
         let fullUtterance = AVSpeechUtterance(string: hanzi)
         fullUtterance.voice = AVSpeechSynthesisVoice(language: "zh-CN")
         fullUtterance.rate = 0.35
-        synthesizer.speak(fullUtterance)
+        newSynthesizer.speak(fullUtterance)
+
+        currentHanzi = hanzi
+        isSpeaking = true
+        currentCharIndex = 0
 
         let perCharDelay: TimeInterval = 0.7
 

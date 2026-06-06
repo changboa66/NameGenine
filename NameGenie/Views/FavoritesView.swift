@@ -49,7 +49,8 @@ struct FavoritesView: View {
                         NameDetailView(
                             hanzi: favorite.hanzi,
                             pinyin: favorite.pinyin,
-                            meaning: favorite.meaning
+                            meaning: favorite.meaning,
+                            cachedDetailData: favorite.detailData
                         )
                     } label: {
                         FavoriteRow(favorite: favorite)
