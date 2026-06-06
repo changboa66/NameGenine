@@ -100,7 +100,7 @@ struct GenerateViewContent: View {
                     .font(.system(size: 11, weight: .medium))
                     .foregroundStyle(.tertiary)
                 LazyVGrid(
-                    columns: [GridItem(.adaptive(minimum: 90), spacing: 8)],
+                    columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 4),
                     spacing: 8
                 ) {
                     ForEach(GenerationPreferences.MeaningTag.allCases) { tag in
