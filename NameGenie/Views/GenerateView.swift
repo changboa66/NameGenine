@@ -24,6 +24,8 @@ struct GenerateView: View {
                 .padding(.top, 8)
                 .padding(.bottom, 16)
             }
+            .overlay(loadingOverlay)
+            .animation(.easeInOut(duration: 0.25), value: isLoading)
             .refreshable {
                 if !candidates.isEmpty {
                     generate(random: isRandomMode)
@@ -147,23 +149,37 @@ struct GenerateView: View {
         }
     }
 
+    @ViewBuilder
+    private var loadingOverlay: some View {
+        if isLoading {
+            ZStack {
+                Color.black.opacity(0.3)
+                    .ignoresSafeArea()
+
+                VStack(spacing: 16) {
+                    LottieView("panda-fly", loopMode: .loop)
+                        .frame(height: 120)
+
+                    Text("正在取名中…")
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(.white)
+                }
+            }
+            .transition(.opacity)
+        }
+    }
+
     private var generateButton: some View {
         Button {
             generate(random: false)
         } label: {
-            HStack(spacing: 8) {
-                if isLoading && !isRandomMode {
-                    ProgressView()
-                        .tint(.white)
-                }
-                Text(isLoading && !isRandomMode ? "Generating..." : "Generate Names")
-                    .font(.system(size: 15, weight: .medium))
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
-            .background(Color.accentColor)
-            .foregroundStyle(.white)
-            .clipShape(.rect(cornerRadius: 10))
+            Text("Generate Names")
+                .font(.system(size: 15, weight: .medium))
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(Color.accentColor)
+                .foregroundStyle(.white)
+                .clipShape(.rect(cornerRadius: 10))
         }
         .disabled(isLoading)
     }
@@ -172,18 +188,13 @@ struct GenerateView: View {
         Button {
             generate(random: true)
         } label: {
-            HStack(spacing: 8) {
-                if isLoading && isRandomMode {
-                    ProgressView()
-                }
-                Text(isLoading && isRandomMode ? "Rolling..." : "🎲 I'm Feeling Lucky")
-                    .font(.system(size: 14, weight: .medium))
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 10)
-            .background(Color(.secondarySystemBackground))
-            .foregroundStyle(.primary)
-            .clipShape(.rect(cornerRadius: 10))
+            Text("🎲 I'm Feeling Lucky")
+                .font(.system(size: 14, weight: .medium))
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 10)
+                .background(Color(.secondarySystemBackground))
+                .foregroundStyle(.primary)
+                .clipShape(.rect(cornerRadius: 10))
         }
         .disabled(isLoading)
     }
@@ -278,6 +289,12 @@ struct NameResultRow: View {
     let candidate: NameCandidate
     let surname: String
 
+    @ObservedObject private var pronunciationService = PronunciationService.shared
+
+    private var isPlayingThis: Bool {
+        pronunciationService.isSpeaking && pronunciationService.currentHanzi == candidate.hanzi
+    }
+
     private var displayName: String {
         surname.isEmpty ? candidate.hanzi : "\(surname)\(candidate.hanzi)"
     }
@@ -297,6 +314,31 @@ struct NameResultRow: View {
             }
 
             Spacer()
+
+            Button {
+                if isPlayingThis {
+                    pronunciationService.stop()
+                } else {
+                    pronunciationService.speak(
+                        hanzi: candidate.hanzi,
+                        pinyin: candidate.pinyin
+                    )
+                }
+            } label: {
+                Group {
+                    if isPlayingThis {
+                        Image(systemName: "stop.circle.fill")
+                            .foregroundStyle(Color.accentColor)
+                    } else {
+                        Image(systemName: "speaker.wave.2.circle")
+                            .foregroundStyle(.tertiary)
+                    }
+                }
+                .font(.system(size: 22))
+            }
+            .disabled(pronunciationService.isSpeaking && !isPlayingThis)
+            .accessibilityLabel(isPlayingThis ? "停止播放" : "播放\(candidate.hanzi)的发音")
+            .accessibilityAddTraits(.startsMediaSession)
 
             VStack(alignment: .trailing, spacing: 4) {
                 Text(candidate.meaning)
