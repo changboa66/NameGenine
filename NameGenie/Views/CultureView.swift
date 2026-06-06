@@ -4,30 +4,21 @@ struct CultureView: View {
     @State private var snippets: [CulturalSnippet] = []
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                LazyVStack(spacing: 16) {
-                    if snippets.isEmpty {
-                        emptyState
-                    } else {
-                        ForEach(snippets) { snippet in
-                            SnippetCard(snippet: snippet)
-                        }
+        ScrollView {
+            LazyVStack(spacing: 16) {
+                if snippets.isEmpty {
+                    emptyState
+                } else {
+                    ForEach(snippets) { snippet in
+                        SnippetCard(snippet: snippet)
                     }
                 }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 16)
             }
-            .toolbar {
-                ToolbarItem(placement: .principal) {
-                    Text("Chinese Name Culture")
-                        .font(.system(size: 15, weight: .medium))
-                        .foregroundStyle(.tertiary)
-                }
-            }
-            .task {
-                loadSnippets()
-            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 16)
+        }
+        .task {
+            loadSnippets()
         }
     }
 
@@ -48,6 +39,29 @@ struct CultureView: View {
             return
         }
         snippets = decoded
+    }
+}
+
+struct CultureFlow: View {
+    @Binding var selectedTab: Tab
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 0) {
+                CultureView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .toolbar {
+                        ToolbarItem(placement: .principal) {
+                            Text("Chinese Name Culture")
+                                .font(.system(size: 15, weight: .medium))
+                                .foregroundStyle(.tertiary)
+                        }
+                    }
+
+                CustomTabBar(selectedTab: $selectedTab, thisTab: .culture)
+            }
+            .ignoresSafeArea(edges: .bottom)
+        }
     }
 }
 

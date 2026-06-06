@@ -7,20 +7,11 @@ struct FavoritesView: View {
     @State private var searchText = ""
 
     var body: some View {
-        NavigationStack {
-            Group {
-                if favorites.isEmpty {
-                    emptyState
-                } else {
-                    listContent
-                }
-            }
-            .toolbar {
-                ToolbarItem(placement: .principal) {
-                    Text("Favorites")
-                        .font(.system(size: 15, weight: .medium))
-                        .foregroundStyle(.tertiary)
-                }
+        Group {
+            if favorites.isEmpty {
+                emptyState
+            } else {
+                listContent
             }
         }
     }
@@ -76,6 +67,29 @@ struct FavoritesView: View {
         return favorites.filter {
             $0.hanzi.localizedCaseInsensitiveContains(searchText) ||
             $0.pinyin.localizedCaseInsensitiveContains(searchText)
+        }
+    }
+}
+
+struct FavoritesFlow: View {
+    @Binding var selectedTab: Tab
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 0) {
+                FavoritesView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .toolbar {
+                        ToolbarItem(placement: .principal) {
+                            Text("Favorites")
+                                .font(.system(size: 15, weight: .medium))
+                                .foregroundStyle(.tertiary)
+                        }
+                    }
+
+                CustomTabBar(selectedTab: $selectedTab, thisTab: .favorites)
+            }
+            .ignoresSafeArea(edges: .bottom)
         }
     }
 }

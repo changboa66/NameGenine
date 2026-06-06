@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct GenerateView: View {
+struct GenerateViewContent: View {
     @State private var preferences = GenerationPreferences()
     @State private var candidates: [NameCandidate] = []
     @State private var isLoading = false
@@ -12,39 +12,35 @@ struct GenerateView: View {
     @State private var pandaLoaded = false
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: 0) {
-                    headerSection
+        ScrollView {
+            VStack(spacing: 0) {
+                headerSection
 
-                    VStack(spacing: 24) {
-                        preferencesSection
-                        generateButton
-                        luckyButton
-                        resultsSection
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 16)
-                    .padding(.bottom, 16)
+                VStack(spacing: 24) {
+                    preferencesSection
+                    generateButton
+                    luckyButton
+                    resultsSection
                 }
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
+                .padding(.bottom, 16)
             }
-            .ignoresSafeArea(edges: .top)
-            .overlay(loadingOverlay)
-            .animation(.easeInOut(duration: 0.25), value: isLoading)
-            .refreshable {
-                if !candidates.isEmpty {
-                    generate(random: isRandomMode)
-                }
+        }
+        .overlay(loadingOverlay)
+        .animation(.easeInOut(duration: 0.25), value: isLoading)
+        .refreshable {
+            if !candidates.isEmpty {
+                generate(random: isRandomMode)
             }
-            .toolbarBackground(.hidden, for: .navigationBar)
-            .navigationDestination(isPresented: $showDetail) {
-                if let name = selectedName {
-                    NameDetailView(
-                        hanzi: name.hanzi,
-                        pinyin: name.pinyin,
-                        meaning: name.meaning
-                    )
-                }
+        }
+        .navigationDestination(isPresented: $showDetail) {
+            if let name = selectedName {
+                NameDetailView(
+                    hanzi: name.hanzi,
+                    pinyin: name.pinyin,
+                    meaning: name.meaning
+                )
             }
         }
     }
@@ -165,7 +161,7 @@ struct GenerateView: View {
                 Color.black.opacity(0.3)
                     .ignoresSafeArea()
 
-        VStack(spacing: 8) {
+                VStack(spacing: 8) {
                     LottieView("panda-fly", loopMode: .loop)
                         .frame(height: 120)
 
@@ -290,6 +286,23 @@ struct GenerateView: View {
                 errorMessage = "Unable to generate names. Please check your connection and try again."
             }
             isLoading = false
+        }
+    }
+}
+
+struct GenerateFlow: View {
+    @Binding var selectedTab: Tab
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 0) {
+                GenerateViewContent()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .toolbarBackground(.hidden, for: .navigationBar)
+
+                CustomTabBar(selectedTab: $selectedTab, thisTab: .generate)
+            }
+            .ignoresSafeArea(edges: .bottom)
         }
     }
 }

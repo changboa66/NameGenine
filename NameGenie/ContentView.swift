@@ -1,22 +1,19 @@
 import SwiftUI
 
 struct ContentView: View {
+    @State private var selectedTab: Tab = .generate
+
     var body: some View {
-        TabView {
-            GenerateView()
-                .tabItem {
-                    Label("Generate", systemImage: "sparkles")
-                }
+        ZStack(alignment: .bottom) {
+            GenerateFlow(selectedTab: $selectedTab)
+                .opacity(selectedTab == .generate ? 1 : 0)
 
-            FavoritesView()
-                .tabItem {
-                    Label("Favorites", systemImage: "bookmark")
-                }
+            FavoritesFlow(selectedTab: $selectedTab)
+                .opacity(selectedTab == .favorites ? 1 : 0)
 
-            CultureView()
-                .tabItem {
-                    Label("Culture", systemImage: "book")
-                }
+            CultureFlow(selectedTab: $selectedTab)
+                .opacity(selectedTab == .culture ? 1 : 0)
         }
+        .ignoresSafeArea(edges: .bottom)
     }
 }
