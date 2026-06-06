@@ -9,21 +9,26 @@ struct GenerateView: View {
     @State private var selectedName: NameCandidate?
     @State private var showDetail = false
     @State private var isRandomMode = false
+    @State private var pandaLoaded = false
 
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 24) {
+                VStack(spacing: 0) {
                     headerSection
-                    preferencesSection
-                    generateButton
-                    luckyButton
-                    resultsSection
+
+                    VStack(spacing: 24) {
+                        preferencesSection
+                        generateButton
+                        luckyButton
+                        resultsSection
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 16)
+                    .padding(.bottom, 16)
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 8)
-                .padding(.bottom, 16)
             }
+            .ignoresSafeArea(edges: .top)
             .overlay(loadingOverlay)
             .animation(.easeInOut(duration: 0.25), value: isLoading)
             .refreshable {
@@ -45,18 +50,14 @@ struct GenerateView: View {
     }
 
     private var headerSection: some View {
-        VStack(spacing: 8) {
-            ZStack {
-                Circle()
-                    .fill(Color.accentColor.opacity(0.1))
-                    .frame(width: 72, height: 72)
-                Text("取名")
-                    .font(.system(size: 28))
-                    .foregroundStyle(Color.accentColor)
-            }
+        VStack(spacing: 0) {
+            PausedLottieView(name: "panda-fly", progress: 0)
+                .frame(width: 120, height: 90)
+                .onAppear { pandaLoaded = true }
 
             Text("Find Your Chinese Name")
                 .font(.system(size: 17, weight: .medium))
+                .padding(.top, -12)
 
             Text("Tell us about yourself and discover meaningful Chinese names")
                 .font(.system(size: 13))
@@ -64,7 +65,15 @@ struct GenerateView: View {
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 20)
         }
-        .padding(.top, 8)
+        .padding(.horizontal, 20)
+        .padding(.top, 15)
+        .padding(.bottom, 24)
+        .frame(maxWidth: .infinity)
+        .background(
+            Rectangle()
+                .fill(Color.accentColor.opacity(0.08))
+                .ignoresSafeArea(edges: .top)
+        )
     }
 
     private var preferencesSection: some View {
@@ -156,7 +165,7 @@ struct GenerateView: View {
                 Color.black.opacity(0.3)
                     .ignoresSafeArea()
 
-                VStack(spacing: 16) {
+        VStack(spacing: 8) {
                     LottieView("panda-fly", loopMode: .loop)
                         .frame(height: 120)
 
