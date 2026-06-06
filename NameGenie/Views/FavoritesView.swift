@@ -4,7 +4,6 @@ import SwiftData
 struct FavoritesView: View {
     @Query(sort: \FavoriteName.createdAt, order: .reverse) private var favorites: [FavoriteName]
     @Environment(\.modelContext) private var modelContext
-    @State private var searchText = ""
 
     var body: some View {
         Group {
@@ -35,7 +34,7 @@ struct FavoritesView: View {
     private var listContent: some View {
         ScrollView {
             LazyVStack(spacing: 12) {
-                ForEach(filteredFavorites) { favorite in
+                ForEach(favorites) { favorite in
                     NavigationLink {
                         NameDetailView(
                             hanzi: favorite.hanzi,
@@ -57,17 +56,6 @@ struct FavoritesView: View {
             .padding(.horizontal, 20)
             .padding(.vertical, 16)
         }
-        .searchable(text: $searchText, prompt: "Search names")
-    }
-
-    private var filteredFavorites: [FavoriteName] {
-        if searchText.isEmpty {
-            return favorites
-        }
-        return favorites.filter {
-            $0.hanzi.localizedCaseInsensitiveContains(searchText) ||
-            $0.pinyin.localizedCaseInsensitiveContains(searchText)
-        }
     }
 }
 
@@ -79,13 +67,6 @@ struct FavoritesFlow: View {
             VStack(spacing: 0) {
                 FavoritesView()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .toolbar {
-                        ToolbarItem(placement: .principal) {
-                            Text("Favorites")
-                                .font(.system(size: 15, weight: .medium))
-                                .foregroundStyle(.tertiary)
-                        }
-                    }
 
                 CustomTabBar(selectedTab: $selectedTab, thisTab: .favorites)
             }

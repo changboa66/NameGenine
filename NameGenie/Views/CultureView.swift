@@ -50,13 +50,7 @@ struct CultureFlow: View {
             VStack(spacing: 0) {
                 CultureView()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .toolbar {
-                        ToolbarItem(placement: .principal) {
-                            Text("Chinese Name Culture")
-                                .font(.system(size: 15, weight: .medium))
-                                .foregroundStyle(.tertiary)
-                        }
-                    }
+                    .toolbarBackground(.hidden, for: .navigationBar)
 
                 CustomTabBar(selectedTab: $selectedTab, thisTab: .culture)
             }

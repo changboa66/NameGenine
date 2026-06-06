@@ -10,37 +10,50 @@ struct GenerateViewContent: View {
     @State private var showDetail = false
     @State private var isRandomMode = false
     @State private var pandaLoaded = false
+    @State private var scrollToResults = false
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 0) {
-                headerSection
+        ScrollViewReader { proxy in
+            ScrollView {
+                VStack(spacing: 0) {
+                    headerSection
 
-                VStack(spacing: 24) {
-                    preferencesSection
-                    generateButton
-                    luckyButton
-                    resultsSection
+                    VStack(spacing: 16) {
+                        preferencesSection
+                        luckyButton
+                        resultsSection
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 16)
+                    .padding(.bottom, 16)
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
-                .padding(.bottom, 16)
             }
-        }
-        .overlay(loadingOverlay)
-        .animation(.easeInOut(duration: 0.25), value: isLoading)
-        .refreshable {
-            if !candidates.isEmpty {
-                generate(random: isRandomMode)
+            .ignoresSafeArea(edges: .top)
+            .overlay(loadingOverlay)
+            .animation(.easeInOut(duration: 0.25), value: isLoading)
+            .refreshable {
+                if !candidates.isEmpty {
+                    generate(random: isRandomMode)
+                }
             }
-        }
-        .navigationDestination(isPresented: $showDetail) {
-            if let name = selectedName {
-                NameDetailView(
-                    hanzi: name.hanzi,
-                    pinyin: name.pinyin,
-                    meaning: name.meaning
-                )
+            .onChange(of: scrollToResults) { _, newValue in
+                if newValue {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        withAnimation {
+                            proxy.scrollTo("results", anchor: .top)
+                        }
+                        scrollToResults = false
+                    }
+                }
+            }
+            .navigationDestination(isPresented: $showDetail) {
+                if let name = selectedName {
+                    NameDetailView(
+                        hanzi: name.hanzi,
+                        pinyin: name.pinyin,
+                        meaning: name.meaning
+                    )
+                }
             }
         }
     }
@@ -48,12 +61,12 @@ struct GenerateViewContent: View {
     private var headerSection: some View {
         VStack(spacing: 0) {
             PausedLottieView(name: "panda-fly", progress: 0)
-                .frame(width: 120, height: 90)
+                .frame(width: 80, height: 60)
                 .onAppear { pandaLoaded = true }
 
             Text("Find Your Chinese Name")
-                .font(.system(size: 17, weight: .medium))
-                .padding(.top, -12)
+                .font(.system(size: 15, weight: .medium))
+                .padding(.top, -8)
 
             Text("Tell us about yourself and discover meaningful Chinese names")
                 .font(.system(size: 13))
@@ -62,8 +75,8 @@ struct GenerateViewContent: View {
                 .padding(.horizontal, 20)
         }
         .padding(.horizontal, 20)
-        .padding(.top, 15)
-        .padding(.bottom, 24)
+        .padding(.top, 10)
+        .padding(.bottom, 16)
         .frame(maxWidth: .infinity)
         .background(
             Rectangle()
@@ -73,11 +86,19 @@ struct GenerateViewContent: View {
     }
 
     private var preferencesSection: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 8) {
+            generateCard
+            meaningsCard
+            aboutYouCard
+        }
+    }
+
+    private var generateCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading, spacing: 8) {
                 Text("GENDER")
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundStyle(.tertiary)
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(.secondary)
                 Picker("Gender", selection: $preferences.gender) {
                     ForEach(GenerationPreferences.Gender.allCases) { gender in
                         Text(gender.label).tag(gender)
@@ -87,54 +108,9 @@ struct GenerateViewContent: View {
             }
 
             VStack(alignment: .leading, spacing: 8) {
-                Text("YOUR NAME / PRONUNCIATION")
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundStyle(.tertiary)
-                TextField("e.g. Christopher", text: $preferences.phoneticInput)
-                    .textFieldStyle(.roundedBorder)
-                    .autocorrectionDisabled()
-            }
-
-            VStack(alignment: .leading, spacing: 8) {
-                Text("DESIRED MEANINGS")
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundStyle(.tertiary)
-                LazyVGrid(
-                    columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 4),
-                    spacing: 8
-                ) {
-                    ForEach(GenerationPreferences.MeaningTag.allCases) { tag in
-                        Button {
-                            if preferences.meanings.contains(tag) {
-                                preferences.meanings.remove(tag)
-                            } else {
-                                preferences.meanings.insert(tag)
-                            }
-                        } label: {
-                            Text(tag.englishLabel)
-                                .font(.system(size: 13))
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .background(
-                                    preferences.meanings.contains(tag)
-                                        ? Color.accentColor
-                                        : Color(.secondarySystemBackground)
-                                )
-                                .foregroundStyle(
-                                    preferences.meanings.contains(tag)
-                                        ? .white
-                                        : .primary
-                                )
-                                .clipShape(.rect(cornerRadius: 16))
-                        }
-                    }
-                }
-            }
-
-            VStack(alignment: .leading, spacing: 8) {
                 Text("CHARACTER COUNT")
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundStyle(.tertiary)
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(.secondary)
                 Picker("Count", selection: $preferences.characterCount) {
                     ForEach(GenerationPreferences.CharacterCount.allCases) { count in
                         Text(count.label).tag(count)
@@ -145,13 +121,80 @@ struct GenerateViewContent: View {
 
             VStack(alignment: .leading, spacing: 8) {
                 Text("SURNAME (OPTIONAL)")
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundStyle(.tertiary)
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(.secondary)
                 TextField("e.g. Wang, Li", text: $preferences.surname)
                     .textFieldStyle(.roundedBorder)
                     .autocorrectionDisabled()
             }
         }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(.secondarySystemBackground))
+        )
+    }
+
+    private var meaningsCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("MEANINGS")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(.secondary)
+
+            LazyVGrid(
+                columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 4),
+                spacing: 8
+            ) {
+                ForEach(GenerationPreferences.MeaningTag.allCases) { tag in
+                    Button {
+                        if preferences.meanings.contains(tag) {
+                            preferences.meanings.remove(tag)
+                        } else {
+                            preferences.meanings.insert(tag)
+                        }
+                    } label: {
+                        Text(tag.englishLabel)
+                            .font(.system(size: 11))
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(
+                                preferences.meanings.contains(tag)
+                                    ? Color.accentColor
+                                    : Color(.tertiarySystemBackground)
+                            )
+                            .foregroundStyle(
+                                preferences.meanings.contains(tag)
+                                    ? .white
+                                    : .primary
+                            )
+                            .clipShape(.rect(cornerRadius: 16))
+                    }
+                }
+            }
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(.secondarySystemBackground))
+        )
+    }
+
+    private var aboutYouCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("YOUR NAME / PRONUNCIATION")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(.secondary)
+                TextField("e.g. Christopher", text: $preferences.phoneticInput)
+                    .textFieldStyle(.roundedBorder)
+                    .autocorrectionDisabled()
+            }
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(.secondarySystemBackground))
+        )
     }
 
     @ViewBuilder
@@ -174,31 +217,16 @@ struct GenerateViewContent: View {
         }
     }
 
-    private var generateButton: some View {
-        Button {
-            generate(random: false)
-        } label: {
-            Text("Generate Names")
-                .font(.system(size: 15, weight: .medium))
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 12)
-                .background(Color.accentColor)
-                .foregroundStyle(.white)
-                .clipShape(.rect(cornerRadius: 10))
-        }
-        .disabled(isLoading)
-    }
-
     private var luckyButton: some View {
         Button {
             generate(random: true)
         } label: {
             Text("🎲 I'm Feeling Lucky")
-                .font(.system(size: 14, weight: .medium))
+                .font(.system(size: 15, weight: .medium))
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 10)
-                .background(Color(.secondarySystemBackground))
-                .foregroundStyle(.primary)
+                .padding(.vertical, 12)
+                .background(Color.accentColor)
+                .foregroundStyle(.white)
                 .clipShape(.rect(cornerRadius: 10))
         }
         .disabled(isLoading)
@@ -229,8 +257,9 @@ struct GenerateViewContent: View {
         } else if !candidates.isEmpty {
             VStack(alignment: .leading, spacing: 12) {
                 Text("RESULTS")
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundStyle(.tertiary)
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(.secondary)
+                    .id("results")
 
                 ForEach(candidates) { candidate in
                     Button {
@@ -282,6 +311,7 @@ struct GenerateViewContent: View {
                 )
                 candidates = result
                 hasGenerated = true
+                scrollToResults = true
             } catch {
                 errorMessage = "Unable to generate names. Please check your connection and try again."
             }
@@ -326,53 +356,62 @@ struct NameResultRow: View {
     }
 
     var body: some View {
-        HStack(spacing: 16) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(displayName)
-                    .font(.system(size: 24))
-                Text(displayPinyin)
-                    .font(.system(size: 13))
-                    .foregroundStyle(.secondary)
-            }
-
-            Spacer()
-
-            Button {
-                if isPlayingThis {
-                    pronunciationService.stop()
-                } else {
-                    pronunciationService.speak(
-                        hanzi: candidate.hanzi,
-                        pinyin: candidate.pinyin
-                    )
+        VStack(spacing: 0) {
+            HStack(spacing: 16) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(displayName)
+                        .font(.system(size: 22))
+                    Text(displayPinyin)
+                        .font(.system(size: 12))
+                        .foregroundStyle(.secondary)
                 }
-            } label: {
-                Group {
-                    if isPlayingThis {
-                        Image(systemName: "stop.circle.fill")
-                            .foregroundStyle(Color.accentColor)
-                    } else {
-                        Image(systemName: "speaker.wave.2.circle")
-                            .foregroundStyle(.tertiary)
-                    }
-                }
-                .font(.system(size: 22))
-            }
-            .disabled(pronunciationService.isSpeaking && !isPlayingThis)
-            .accessibilityLabel(isPlayingThis ? "停止播放" : "播放\(candidate.hanzi)的发音")
-            .accessibilityAddTraits(.startsMediaSession)
 
-            VStack(alignment: .trailing, spacing: 4) {
+                Spacer()
+
                 Text(candidate.meaning)
                     .font(.system(size: 13))
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.trailing)
-                Text(String(format: "%.0f%%", candidate.relevance * 100))
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundStyle(.quaternary)
+
+                Button {
+                    if isPlayingThis {
+                        pronunciationService.stop()
+                    } else {
+                        pronunciationService.speak(
+                            hanzi: candidate.hanzi,
+                            pinyin: candidate.pinyin
+                        )
+                    }
+                } label: {
+                    Group {
+                        if isPlayingThis {
+                            Image(systemName: "stop.circle.fill")
+                                .foregroundStyle(Color.accentColor)
+                        } else {
+                            Image(systemName: "speaker.wave.2.circle")
+                                .foregroundStyle(.tertiary)
+                        }
+                    }
+                    .font(.system(size: 18))
+                }
+                .disabled(pronunciationService.isSpeaking && !isPlayingThis)
+                .accessibilityLabel(isPlayingThis ? "停止播放" : "播放\(candidate.hanzi)的发音")
+                .accessibilityAddTraits(.startsMediaSession)
             }
+            .padding(.horizontal, 16)
+            .padding(.top, 12)
+
+            GeometryReader { geo in
+                Rectangle()
+                    .fill(Color.accentColor.opacity(0.3))
+                    .frame(width: geo.size.width * CGFloat(candidate.relevance))
+                    .clipShape(.rect(cornerRadius: 1.5))
+            }
+            .frame(height: 3)
+            .padding(.horizontal, 16)
+            .padding(.top, 8)
+            .padding(.bottom, 12)
         }
-        .padding(16)
         .background(Color(.secondarySystemBackground))
         .clipShape(.rect(cornerRadius: 10))
     }
