@@ -1,4 +1,4 @@
-const GENERATION_PROMPT = `You are a Chinese naming expert. Generate 3 Chinese given names based on the preferences below.
+const GENERATION_PROMPT = `You are a Chinese naming expert. Generate 5 Chinese given names based on the preferences below.
 
 Preferences:
 - Gender: {{gender}}
@@ -31,7 +31,7 @@ Return valid JSON ONLY, no markdown, no explanation:
   ]
 }`;
 
-const RANDOM_PROMPT = `You are a Chinese naming expert. Generate 3 Chinese given names in random/surprise mode.
+const RANDOM_PROMPT = `You are a Chinese naming expert. Generate 5 Chinese given names in random/surprise mode.
 
 Preferences (may be empty — fill in your own creativity if so):
 - Gender: {{gender}}
@@ -39,10 +39,10 @@ Preferences (may be empty — fill in your own creativity if so):
 - Surname (for compatibility check): {{surname}}
 
 Rules:
-1. Return 3 names in 3 DISTINCT STYLES:
-   - First name: CLASSIC / TRADITIONAL — timeless, elegant, established characters
-   - Second name: MODERN / POPULAR — contemporary feel, trendy characters
-   - Third name: UNIQUE / LITERARY — rare characters, poetic or artistic flair
+1. Return 5 names across 3 DISTINCT STYLES:
+   - Two names: CLASSIC / TRADITIONAL — timeless, elegant, established characters
+   - Two names: MODERN / POPULAR — contemporary feel, trendy characters
+   - One name: UNIQUE / LITERARY — rare characters, poetic or artistic flair
 2. Names should sound pleasant in Mandarin Chinese
 3. AVOID: 3rd-tone + 3rd-tone combinations
 4. AVOID: names that are very common in the 2010s (e.g., 子轩, 梓涵, 浩宇)

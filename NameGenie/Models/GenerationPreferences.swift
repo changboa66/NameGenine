@@ -46,6 +46,16 @@ struct GenerationPreferences {
         case harmony = "和谐"
         case joy = "快乐"
         case prosperity = "繁荣"
+        case elegance = "优雅"
+        case virtue = "品德"
+        case intelligence = "聪慧"
+        case peace = "和平"
+
+        case diligence = "勤奋"
+        case integrity = "正直"
+        case longevity = "长寿"
+        case fortune = "福气"
+        case ambition = "志向"
 
         var id: Self { self }
 
@@ -61,6 +71,15 @@ struct GenerationPreferences {
             case .harmony: "Harmony"
             case .joy: "Joy"
             case .prosperity: "Wealth"
+            case .elegance: "Elegance"
+            case .virtue: "Virtue"
+            case .intelligence: "Clever"
+            case .peace: "Peace"
+            case .diligence: "Diligence"
+            case .integrity: "Integrity"
+            case .longevity: "Eternal"
+            case .fortune: "Fortune"
+            case .ambition: "Ambition"
             }
         }
 
@@ -76,6 +95,15 @@ struct GenerationPreferences {
             case .harmony: .teal
             case .joy: .yellow
             case .prosperity: .indigo
+            case .elegance: .pink
+            case .virtue: .indigo
+            case .intelligence: .teal
+            case .peace: .mint
+            case .diligence: .brown
+            case .integrity: .blue
+            case .longevity: .red
+            case .fortune: .yellow
+            case .ambition: .purple
             }
         }
     }

@@ -11,6 +11,7 @@ struct GenerateViewContent: View {
     @State private var isRandomMode = false
     @State private var pandaLoaded = false
     @State private var scrollToResults = false
+    @State private var showAllMeanings = false
 
     var body: some View {
         ScrollViewReader { proxy in
@@ -156,7 +157,10 @@ struct GenerateViewContent: View {
                 columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 4),
                 spacing: 8
             ) {
-                ForEach(GenerationPreferences.MeaningTag.allCases) { tag in
+                let tags = GenerationPreferences.MeaningTag.allCases
+                let displayed = showAllMeanings ? tags : Array(tags.prefix(11))
+
+                ForEach(displayed) { tag in
                     Button {
                         if preferences.meanings.contains(tag) {
                             preferences.meanings.remove(tag)
@@ -180,6 +184,24 @@ struct GenerateViewContent: View {
                                     : .primary
                             )
                             .clipShape(.rect(cornerRadius: 6))
+                    }
+                }
+
+                if !showAllMeanings {
+                    Button {
+                        showAllMeanings = true
+                    } label: {
+                        Text("...")
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundStyle(.secondary)
+                    }
+                } else {
+                    Button {
+                        showAllMeanings = false
+                    } label: {
+                        Image(systemName: "chevron.up")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(.secondary)
                     }
                 }
             }
@@ -239,7 +261,7 @@ struct GenerateViewContent: View {
                     LottieView("panda-fly", loopMode: .loop)
                         .frame(height: 120)
 
-                    Text("正在取名中…")
+                    Text("Thinking…")
                         .font(.system(size: 15, weight: .medium))
                         .foregroundStyle(.white)
                 }
@@ -316,8 +338,8 @@ struct GenerateViewContent: View {
                 }
 
                 if isRandomMode {
-                    Button("不喜欢？再摇一次 → 🎲") {
-                        generate(random: true)
+                    Button("More Names 🎲") {
+                        loadMore(random: true)
                     }
                     .font(.system(size: 13, weight: .medium))
                     .frame(maxWidth: .infinity)
@@ -353,6 +375,24 @@ struct GenerateViewContent: View {
                 candidates = result
                 hasGenerated = true
                 scrollToResults = true
+            } catch {
+                errorMessage = "Unable to generate names. Please check your connection and try again."
+            }
+            isLoading = false
+        }
+    }
+
+    private func loadMore(random: Bool) {
+        isLoading = true
+        errorMessage = nil
+
+        Task {
+            do {
+                let result = try await NameGenieAPI.shared.generateNames(
+                    preferences: preferences,
+                    random: random
+                )
+                candidates += result
             } catch {
                 errorMessage = "Unable to generate names. Please check your connection and try again."
             }
