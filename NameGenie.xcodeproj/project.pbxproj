@@ -22,6 +22,7 @@
 		8DCC70D92C277D02FBC31A74 /* FavoritesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20359417254B9640863A7B70 /* FavoritesView.swift */; };
 		945A6DF2B4563D1C1B35A5E5 /* NameDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D70CC92C793F01AF1FB21803 /* NameDetailView.swift */; };
 		B90FB2AF57105476FC8A9B1B /* LottieView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5527B375A6F51D71671D05DF /* LottieView.swift */; };
+		BD57C88433712EFD542616FB /* DeviceIDService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FC7089E2CEAD3F9E0C4D550 /* DeviceIDService.swift */; };
 		CEFD7870B5818D8883AF360D /* NameGenieApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4D26E754444E82C881BBC8F /* NameGenieApp.swift */; };
 		D3665BD959C352547E17F8E6 /* NameCandidate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6670B619FD91CE7C629335 /* NameCandidate.swift */; };
 		E3AD4086534D17216ACAF762 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F3C82D644F53D8C10A22458C /* Preview Assets.xcassets */; };
@@ -35,6 +36,7 @@
 		27C814C250CBBA62F66E6EE4 /* GenerationPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerationPreferences.swift; sourceTree = "<group>"; };
 		4BD4A1EDB8532308B16BF75F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		5527B375A6F51D71671D05DF /* LottieView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LottieView.swift; sourceTree = "<group>"; };
+		6FC7089E2CEAD3F9E0C4D550 /* DeviceIDService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceIDService.swift; sourceTree = "<group>"; };
 		806056EDA04E8090DC7C1353 /* FavoriteName.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteName.swift; sourceTree = "<group>"; };
 		80FA32F935F5A493BDA5D82E /* cultural_content.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = cultural_content.json; sourceTree = "<group>"; };
 		8589C61EDFE093E67D2B97BD /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -68,6 +70,7 @@
 		362802F90C8D38CCBA2189C0 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				6FC7089E2CEAD3F9E0C4D550 /* DeviceIDService.swift */,
 				A151023320456CBC878160E8 /* NameGenieAPI.swift */,
 				ADB406646A4EF5842CAF4698 /* PronunciationService.swift */,
 			);
@@ -230,6 +233,7 @@
 				4B6B236418767803A0E8BA6A /* ContentView.swift in Sources */,
 				24AD156FC5400638F7D99C60 /* CultureView.swift in Sources */,
 				80C24530EF06A77F71361607 /* CustomTabBar.swift in Sources */,
+				BD57C88433712EFD542616FB /* DeviceIDService.swift in Sources */,
 				60D80D194500A5A1DD6047C4 /* FavoriteName.swift in Sources */,
 				8DCC70D92C277D02FBC31A74 /* FavoritesView.swift in Sources */,
 				5F311E6E83C88D8FA58CB1AC /* GenerateView.swift in Sources */,

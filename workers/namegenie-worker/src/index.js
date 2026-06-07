@@ -110,11 +110,47 @@ function buildPrompt(template, variables) {
   return result;
 }
 
-function errorResponse(status, message) {
+function errorResponse(status, message, extraHeaders = {}) {
   return new Response(JSON.stringify({ error: message }), {
     status,
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...extraHeaders },
   });
+}
+
+function getClientIP(request) {
+  return request.headers.get('CF-Connecting-IP')
+    || request.headers.get('X-Forwarded-For')?.split(',')[0]?.trim()
+    || 'unknown';
+}
+
+async function checkRateLimit(kv, type, identifier, limit, windowSec) {
+  if (!identifier || identifier === 'unknown') return { allowed: true, remaining: limit };
+
+  const key = `rl:${type}:${identifier}`;
+  const now = Math.floor(Date.now() / 1000);
+  const cutoff = now - windowSec;
+
+  let timestamps = [];
+  const existing = await kv.get(key, { type: 'text' });
+  if (existing) {
+    try { timestamps = JSON.parse(existing); } catch { timestamps = []; }
+  }
+
+  timestamps = timestamps.filter(ts => ts > cutoff);
+
+  if (timestamps.length >= limit) {
+    const oldestInWindow = timestamps[0];
+    const resetIn = Math.max(1, oldestInWindow + windowSec - now);
+    return {
+      allowed: false,
+      remaining: 0,
+      reset: now + resetIn,
+    };
+  }
+
+  timestamps.push(now);
+  await kv.put(key, JSON.stringify(timestamps), { expirationTtl: windowSec * 2 + 60 });
+  return { allowed: true, remaining: limit - timestamps.length, reset: now + windowSec };
 }
 
 export default {
@@ -133,6 +169,42 @@ export default {
       body = await request.json();
     } catch {
       return errorResponse(400, 'Invalid JSON body');
+    }
+
+    const ip = getClientIP(request);
+    const deviceId = request.headers.get('X-Device-ID') || '';
+    const kv = env.RATE_LIMIT_KV;
+
+    const ipCheck = await checkRateLimit(kv, 'ip', ip, 100, 60);
+    if (!ipCheck.allowed) {
+      return errorResponse(429, 'Rate limit exceeded. Please try again later.', {
+        'X-RateLimit-Remaining': '0',
+        'X-RateLimit-Reset': String(ipCheck.reset),
+      });
+    }
+
+    let deviceCheck = null;
+    if (deviceId) {
+      deviceCheck = await checkRateLimit(kv, 'device', deviceId, 50, 60);
+      if (!deviceCheck.allowed) {
+        return errorResponse(429, 'Rate limit exceeded. Please try again later.', {
+          'X-RateLimit-Remaining': '0',
+          'X-RateLimit-Reset': String(deviceCheck.reset),
+        });
+      }
+    }
+
+    function rateLimitHeaders() {
+      const remaining = deviceCheck
+        ? Math.min(ipCheck.remaining, deviceCheck.remaining)
+        : ipCheck.remaining;
+      const reset = deviceCheck
+        ? Math.max(ipCheck.reset, deviceCheck.reset)
+        : ipCheck.reset;
+      return {
+        'X-RateLimit-Remaining': String(remaining),
+        'X-RateLimit-Reset': String(reset),
+      };
     }
 
     const { action, random, ...params } = body;
@@ -169,7 +241,7 @@ export default {
     try {
       const apiKey = env.DEEPSEEK_API_KEY;
       if (!apiKey) {
-        return errorResponse(500, 'Server configuration error');
+        return errorResponse(500, 'Server configuration error', rateLimitHeaders());
       }
 
       const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
@@ -194,32 +266,32 @@ export default {
 
       if (!response.ok) {
         const errorText = await response.text();
-        return errorResponse(502, `AI API error: ${response.status}`);
+        return errorResponse(502, `AI API error: ${response.status}`, rateLimitHeaders());
       }
 
       const data = await response.json();
       const content = data.choices?.[0]?.message?.content;
 
       if (!content) {
-        return errorResponse(502, 'Empty response from AI API');
+        return errorResponse(502, 'Empty response from AI API', rateLimitHeaders());
       }
 
       let parsed;
       try {
         parsed = JSON.parse(content);
       } catch {
-        return errorResponse(502, 'Invalid JSON from AI API');
+        return errorResponse(502, 'Invalid JSON from AI API', rateLimitHeaders());
       }
 
       return new Response(JSON.stringify(parsed), {
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...rateLimitHeaders() },
       });
     } catch (err) {
       clearTimeout(timeoutId);
       if (err.name === 'AbortError') {
-        return errorResponse(504, 'AI API request timed out');
+        return errorResponse(504, 'AI API request timed out', rateLimitHeaders());
       }
-      return errorResponse(502, 'AI API request failed');
+      return errorResponse(502, 'AI API request failed', rateLimitHeaders());
     }
   },
 };

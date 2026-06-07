@@ -25,7 +25,7 @@ struct GenerateViewContent: View {
                         resultsSection
                     }
                     .padding(.horizontal, 20)
-                    .padding(.top, 16)
+                    .padding(.top, 3)
                     .padding(.bottom, 16)
                 }
             }
@@ -80,11 +80,12 @@ struct GenerateViewContent: View {
                 .font(.system(size: 13))
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
+                .padding(.top, 12)
                 .padding(.horizontal, 20)
         }
         .padding(.horizontal, 20)
         .padding(.top, 20)
-        .padding(.bottom, 16)
+        .padding(.bottom, 0)
         .frame(maxWidth: .infinity)
         .background(
             LinearGradient(

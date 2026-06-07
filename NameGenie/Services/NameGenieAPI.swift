@@ -6,17 +6,29 @@ actor NameGenieAPI {
     private let baseURL: String
     private let session: URLSession
     private let decoder: JSONDecoder
+    private let deviceID: String
 
     private var resultCache: [String: [NameCandidate]] = [:]
     private var detailCache: [String: NameDetail] = [:]
 
     private init() {
         self.baseURL = "https://namegenie-worker.changboa66.workers.dev"
+        self.deviceID = DeviceIDService.getDeviceID()
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 15
         config.timeoutIntervalForResource = 30
         self.session = URLSession(configuration: config)
         self.decoder = JSONDecoder()
+    }
+
+    private func makeRequest(body: [String: Any]) throws -> URLRequest {
+        let httpBody = try JSONSerialization.data(withJSONObject: body)
+        var request = URLRequest(url: URL(string: baseURL)!)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(deviceID, forHTTPHeaderField: "X-Device-ID")
+        request.httpBody = httpBody
+        return request
     }
 
     func generateNames(preferences: GenerationPreferences, random: Bool = false) async throws -> [NameCandidate] {
@@ -47,11 +59,7 @@ actor NameGenieAPI {
             return cached
         }
 
-        let httpBody = try JSONSerialization.data(withJSONObject: body)
-        var request = URLRequest(url: URL(string: baseURL)!)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = httpBody
+        let request = try makeRequest(body: body)
 
         let (data, _) = try await session.data(for: request)
         let response = try decoder.decode(GenerateResponse.self, from: data)
@@ -81,11 +89,7 @@ actor NameGenieAPI {
             "pinyin": pinyin,
         ]
 
-        let httpBody = try JSONSerialization.data(withJSONObject: body)
-        var request = URLRequest(url: URL(string: baseURL)!)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = httpBody
+        let request = try makeRequest(body: body)
 
         let (data, _) = try await session.data(for: request)
         let detail = try decoder.decode(NameDetail.self, from: data)
