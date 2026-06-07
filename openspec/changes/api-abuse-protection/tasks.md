@@ -28,22 +28,22 @@
 
 ### 3.1 服务端密钥与验签
 
-- [ ] 3.1.1 生成 HMAC 签名密钥，通过 `wrangler secret put SIGNING_KEY` 配置到 Worker 生产环境
-- [ ] 3.1.2 在 `src/index.js` 中实现 `verifySignature(request, body, secret)` 函数：读取 `X-Signature` 和 `X-Timestamp`，校验时间戳是否在 ±30s 内，重新计算 HMAC 比对
-- [ ] 3.1.3 在 `fetch()` 的限流中间件之后、业务逻辑之前插入验签步骤：签名无效则返回 401
-- [ ] 3.1.4 实现双密钥兼容逻辑：优先使用当前 secret 验签，失败则尝试上一个 secret
+- [x] 3.1.1 生成 HMAC 签名密钥，通过 `wrangler secret put SIGNING_KEY` 配置到 Worker 生产环境
+- [x] 3.1.2 在 `src/index.js` 中实现 `verifySignature(request, body, secret)` 函数：读取 `X-Signature` 和 `X-Timestamp`，校验时间戳是否在 ±30s 内，重新计算 HMAC 比对
+- [x] 3.1.3 在 `fetch()` 插入验签步骤：签名无效则返回 401
+- [x] 3.1.4 实现双密钥兼容逻辑：优先使用当前 secret 验签，失败则尝试上一个 secret
 
 ### 3.2 客户端签名逻辑
 
-- [ ] 3.2.1 在 `NameGenieAPI.swift` 中实现 `signRequest(body)` 方法：构造 message = `"POST\napplication/json\n" + SHA256(body)`，用嵌入的 signing key 计算 HMAC-SHA256
-- [ ] 3.2.2 在每个请求中添加 `X-Signature` 和 `X-Timestamp` 头
-- [ ] 3.2.3 将 signing key 以常量的形式嵌入代码（或通过 Build Settings 注入），确认为非对称/对称密钥
+- [x] 3.2.1 在 `NameGenieAPI.swift` 中实现 `signRequest(body)` 方法：构造 message = `"POST\napplication/json\n" + SHA256(body)`，用嵌入的 signing key 计算 HMAC-SHA256
+- [x] 3.2.2 在每个请求中添加 `X-Signature` 和 `X-Timestamp` 头
+- [x] 3.2.3 将 signing key 以常量的形式嵌入代码（或通过 Build Settings 注入），确认为非对称/对称密钥
 
 ### 3.3 集成验证
 
-- [ ] 3.3.1 本地 `wrangler dev` + iOS 模拟器联调，验证完整请求链路通过
-- [ ] 3.3.2 用 curl 测试无签名请求被 401 拒绝
-- [ ] 3.3.3 用 curl 测试超时签名（旧 Timestamp）被 401 拒绝
+- [x] 3.3.1 本地 `wrangler dev` + iOS 模拟器联调，验证完整请求链路通过
+- [x] 3.3.2 用 curl 测试无签名请求被 401 拒绝
+- [x] 3.3.3 用 curl 测试超时签名（旧 Timestamp）被 401 拒绝
 - [ ] 3.3.4 部署到 production，用 TestFlight 版本验证端到端功能正常
 
 ## 4. 验证

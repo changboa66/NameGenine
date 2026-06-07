@@ -1,4 +1,5 @@
 import Foundation
+import CryptoKit
 
 actor NameGenieAPI {
     static let shared = NameGenieAPI()
@@ -21,12 +22,24 @@ actor NameGenieAPI {
         self.decoder = JSONDecoder()
     }
 
+    private let signingKey = "92e4b115a656575f8c8c8de59225a59688cd0731458ef23dc5ad0e8d1c484cee"
+
     private func makeRequest(body: [String: Any]) throws -> URLRequest {
         let httpBody = try JSONSerialization.data(withJSONObject: body)
+        let timestamp = Int(Date().timeIntervalSince1970)
+        let bodyHash = SHA256.hash(data: httpBody).compactMap { String(format: "%02x", $0) }.joined()
+        let message = "POST\napplication/json\n\(bodyHash)"
+
+        let key = SymmetricKey(data: Data(signingKey.utf8))
+        let mac = HMAC<SHA256>.authenticationCode(for: Data(message.utf8), using: key)
+        let signature = mac.compactMap { String(format: "%02x", $0) }.joined()
+
         var request = URLRequest(url: URL(string: baseURL)!)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue(deviceID, forHTTPHeaderField: "X-Device-ID")
+        request.setValue(signature, forHTTPHeaderField: "X-Signature")
+        request.setValue(String(timestamp), forHTTPHeaderField: "X-Timestamp")
         request.httpBody = httpBody
         return request
     }

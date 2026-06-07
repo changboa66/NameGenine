@@ -31,7 +31,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		036BAE6BB97F1E4717D51EE2 /* panda-fly-dot.lottie */ = {isa = PBXFileReference; lastKnownFileType = file; path = "panda-fly-dot.lottie"; sourceTree = "<group>"; };
+		036BAE6BB97F1E4717D51EE2 /* panda-fly-dot.lottie */ = {isa = PBXFileReference; path = "panda-fly-dot.lottie"; sourceTree = "<group>"; };
 		20359417254B9640863A7B70 /* FavoritesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoritesView.swift; sourceTree = "<group>"; };
 		27C814C250CBBA62F66E6EE4 /* GenerationPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerationPreferences.swift; sourceTree = "<group>"; };
 		4BD4A1EDB8532308B16BF75F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -51,7 +51,7 @@
 		D70CC92C793F01AF1FB21803 /* NameDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NameDetailView.swift; sourceTree = "<group>"; };
 		E58158D1F90EE55D5B529159 /* CultureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CultureView.swift; sourceTree = "<group>"; };
 		F3C82D644F53D8C10A22458C /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		F84229D96059E4AFBC30DC97 /* NameGenie.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NameGenie.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F84229D96059E4AFBC30DC97 /* NameGenie.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = NameGenie.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FF34B97A5AE810B9C2D3B5C9 /* panda-fly.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "panda-fly.json"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -184,6 +184,7 @@
 				LastUpgradeCheck = 1600;
 				TargetAttributes = {
 					7EC68924E188BF3557BB8442 = {
+						DevelopmentTeam = "";
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -258,7 +259,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = BJJSXN6S66;
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = NameGenie/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -337,7 +338,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = BJJSXN6S66;
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = NameGenie/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

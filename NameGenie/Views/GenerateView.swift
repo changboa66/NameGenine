@@ -425,16 +425,75 @@ struct NameResultRow: View {
 
     @ObservedObject private var pronunciationService = PronunciationService.shared
 
-    private var isPlayingThis: Bool {
-        pronunciationService.isSpeaking && pronunciationService.currentHanzi == candidate.hanzi
+    private static let pinyinToHanzi: [String: String] = [
+        "li": "李", "wang": "王", "zhang": "张", "liu": "刘", "chen": "陈",
+        "yang": "杨", "zhao": "赵", "huang": "黄", "zhou": "周", "wu": "吴",
+        "xu": "徐", "sun": "孙", "hu": "胡", "zhu": "朱", "gao": "高",
+        "lin": "林", "he": "何", "guo": "郭", "ma": "马", "luo": "罗",
+        "liang": "梁", "song": "宋", "zheng": "郑", "xie": "谢", "han": "韩",
+        "tang": "唐", "feng": "冯", "yu": "于", "dong": "董", "xiao": "萧",
+        "cheng": "程", "cao": "曹", "yuan": "袁", "deng": "邓",
+        "fu": "傅", "shen": "沈", "zeng": "曾", "peng": "彭", "lv": "吕",
+        "su": "苏", "lu": "卢", "jiang": "蒋", "cai": "蔡", "jia": "贾",
+        "ding": "丁", "wei": "魏", "xue": "薛", "ye": "叶", "pan": "潘",
+        "du": "杜", "dai": "戴", "xia": "夏", "tian": "田", "ren": "任",
+        "fang": "方", "yao": "姚", "tan": "谭", "liao": "廖",
+        "zou": "邹", "xiong": "熊", "jin": "金", "hao": "郝",
+        "kong": "孔", "bai": "白", "cui": "崔", "kang": "康", "mao": "毛",
+        "qiu": "邱", "qin": "秦", "gu": "顾",
+        "hou": "侯", "shao": "邵", "meng": "孟", "long": "龙", "wan": "万",
+        "duan": "段", "qian": "钱", "yin": "尹",
+        "yi": "易", "chang": "常",
+        "qiao": "乔", "lai": "赖", "gong": "龚",
+    ]
+
+    private static let hanziToPinyin: [String: String] = {
+        var map: [String: String] = [:]
+        for (pinyin, hanzi) in pinyinToHanzi {
+            map[hanzi] = pinyin.prefix(1).uppercased() + pinyin.dropFirst()
+        }
+        return map
+    }()
+
+    private var surnameHanzi: String {
+        if surname.range(of: "\\p{Han}", options: .regularExpression) != nil {
+            return surname
+        }
+        return Self.pinyinToHanzi[surname.lowercased()] ?? ""
+    }
+
+    private var surnamePinyin: String {
+        if surname.range(of: "\\p{Han}", options: .regularExpression) != nil {
+            return Self.hanziToPinyin[surname] ?? surname
+        }
+        return surname
     }
 
     private var displayName: String {
-        surname.isEmpty ? candidate.hanzi : "\(surname)\(candidate.hanzi)"
+        if surnameHanzi.isEmpty { return candidate.hanzi }
+        return "\(surnameHanzi)\(candidate.hanzi)"
     }
 
     private var displayPinyin: String {
-        surname.isEmpty ? candidate.pinyin : "\(surname) \(candidate.pinyin)"
+        if surnamePinyin.isEmpty { return candidate.pinyin }
+        return "\(surnamePinyin) \(candidate.pinyin)"
+    }
+
+    private var displaySurname: String {
+        if surname.range(of: "\\p{Han}", options: .regularExpression) != nil {
+            return surname
+        }
+        return Self.pinyinToHanzi[surname.lowercased()] ?? ""
+    }
+
+    private var displayName: String {
+        if displaySurname.isEmpty { return candidate.hanzi }
+        return "\(displaySurname)\(candidate.hanzi)"
+    }
+
+    private var displayPinyin: String {
+        if displaySurname.isEmpty { return candidate.pinyin }
+        return "\(displaySurname) \(candidate.pinyin)"
     }
 
     private var styleColor: Color {

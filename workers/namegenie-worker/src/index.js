@@ -1,68 +1,73 @@
-const GENERATION_PROMPT = `You are a Chinese naming expert. Generate 5 Chinese given names based on the preferences below.
+const GENERATION_PROMPT = `You are a Chinese naming expert. Generate 5 Chinese given names (名) based on the preferences below.
 
 Preferences:
 - Gender: {{gender}}
 - Phonetic input: {{phoneticInput}}
 - Desired meaning: {{meanings}}
 - Character count: {{characterCount}}
-- Surname (for compatibility check): {{surname}}
+- Surname (姓): {{surname}}
 
 Rules:
-1. Each name MUST be {{characterCount}} characters (not counting surname)
-2. Names should sound pleasant in Mandarin Chinese
-3. AVOID: 3rd-tone + 3rd-tone combinations (e.g., 李有 - too awkward to pronounce)
-4. AVOID: names that are very common in the 2010s (e.g., 子轩, 梓涵, 浩宇)
-5. AVOID: characters with negative or embarrassing homophones
-6. AVOID: characters that look like they belong to an older generation
-7. If phonetic input is provided, try to approximate the sound with Chinese syllables
-8. If meanings are provided, prioritize characters that carry those meanings
-9. If a surname is provided, ensure the full name sounds natural together
-10. Each name should have a coherent overall meaning
+1. You generate ONLY given names (名), {{characterCount}} characters each. The surname (姓) is just shown for reference — do NOT include it in your output.
+2. You MUST take ALL preferences seriously: gender, phonetic input, meanings, and surname all matter. If phonetic input or surname is provided, your names MUST consider them.
+3. Names should sound pleasant in Mandarin Chinese
+4. AVOID: 3rd-tone + 3rd-tone combinations (e.g., 李有 - too awkward to pronounce)
+5. AVOID: names that are very common in the 2010s (e.g., 子轩, 梓涵, 浩宇)
+6. AVOID: characters with negative or embarrassing homophones
+7. AVOID: characters that look like they belong to an older generation
+8. When phonetic input is provided, you MUST choose characters whose Mandarin pinyin pronunciation closely approximates the sound of the phonetic input. This is a top priority. Example: Smith → 思密 (Sī Mì) or 思明 (Sī Míng)
+9. If meanings are provided, prioritize characters that carry those meanings
+10. If a surname (姓) is provided, use it to guide name selection — the given name should sound harmonious after that surname
 
-Return valid JSON ONLY, no markdown, no explanation:
+Return ONLY valid JSON, no markdown, no explanation:
 {
   "candidates": [
     {
-      "hanzi": "example",
-      "pinyin": "Lì Huá",
-      "meaning": "example meaning in English",
+      "hanzi": "思远",
+      "pinyin": "Sī Yuǎn",
+      "meaning": "thoughtful and far-reaching",
       "relevance": 0.95
     }
   ]
-}`;
+}
 
-const RANDOM_PROMPT = `You are a Chinese naming expert. Generate 5 Chinese given names in random/surprise mode.
+CRITICAL: hanzi must contain {{characterCount}} characters — the given name ONLY, never include the surname (姓).`;
+
+const RANDOM_PROMPT = `You are a Chinese naming expert. Generate 5 Chinese given names (名) in random/surprise mode.
 
 Preferences (may be empty — fill in your own creativity if so):
 - Gender: {{gender}}
 - Character count: {{characterCount}}
-- Surname (for compatibility check): {{surname}}
+- Surname (姓): {{surname}}
 
 Rules:
-1. Return 5 names across 3 DISTINCT STYLES:
+1. You generate ONLY given names (名). The surname (姓) is just shown for reference — do NOT include it in your output.
+2. If a surname (姓) is provided, use it to guide name selection — the given name should sound harmonious after that surname
+3. Return 5 names across 3 DISTINCT STYLES:
    - Two names: CLASSIC / TRADITIONAL — timeless, elegant, established characters
    - Two names: MODERN / POPULAR — contemporary feel, trendy characters
    - One name: UNIQUE / LITERARY — rare characters, poetic or artistic flair
-2. Names should sound pleasant in Mandarin Chinese
-3. AVOID: 3rd-tone + 3rd-tone combinations
-4. AVOID: names that are very common in the 2010s (e.g., 子轩, 梓涵, 浩宇)
-5. AVOID: characters with negative or embarrassing homophones
-6. If gender is provided, respect it; otherwise choose freely
-7. If character count is provided, respect it; otherwise mix 2-character names
-8. If a surname is provided, ensure the full name sounds natural together
-9. Label each candidate with its style in the meaning field, e.g. "Classic — bright radiance"
+4. Names should sound pleasant in Mandarin Chinese
+5. AVOID: 3rd-tone + 3rd-tone combinations
+6. AVOID: names that are very common in the 2010s (e.g., 子轩, 梓涵, 浩宇)
+7. AVOID: characters with negative or embarrassing homophones
+8. If gender is provided, respect it; otherwise choose freely
+9. If character count is provided, respect it; otherwise mix 2-character names
+10. Label each candidate with its style in the meaning field, e.g. "Classic — bright radiance"
 
 Return valid JSON ONLY, no markdown, no explanation:
 {
   "candidates": [
     {
-      "hanzi": "example",
-      "pinyin": "Lì Huá",
-      "meaning": "Classic — example meaning",
+      "hanzi": "思远",
+      "pinyin": "Sī Yuǎn",
+      "meaning": "Classic — thoughtful and far-reaching",
       "relevance": 0.9
     }
   ]
-}`;
+}
+
+CRITICAL: hanzi must contain only the given name — never include the surname (姓).`;
 
 const DETAIL_PROMPT = `You are a Chinese naming expert. Provide a detailed breakdown of the Chinese name below.
 
@@ -123,6 +128,43 @@ function getClientIP(request) {
     || 'unknown';
 }
 
+async function sha256(text) {
+  const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function computeHMAC(secret, message) {
+  const key = await crypto.subtle.importKey(
+    'raw', new TextEncoder().encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false, ['sign']
+  );
+  const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(message));
+  return Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function verifySignature(headers, rawBody, secrets) {
+  const signature = headers.get('X-Signature');
+  const timestamp = headers.get('X-Timestamp');
+
+  if (!signature || !timestamp) return false;
+
+  const now = Math.floor(Date.now() / 1000);
+  const ts = parseInt(timestamp, 10);
+  if (isNaN(ts) || Math.abs(now - ts) > 30) return false;
+
+  const contentType = headers.get('Content-Type') || 'application/json';
+  const bodyHash = await sha256(rawBody);
+  const message = `POST\n${contentType}\n${bodyHash}`;
+
+  for (const secret of secrets) {
+    const expected = await computeHMAC(secret, message);
+    if (expected === signature) return true;
+  }
+
+  return false;
+}
+
 async function checkRateLimit(kv, type, identifier, limit, windowSec) {
   if (!identifier || identifier === 'unknown') return { allowed: true, remaining: limit };
 
@@ -164,11 +206,26 @@ export default {
       return errorResponse(400, 'Content-Type must be application/json');
     }
 
+    let rawBody;
+    try {
+      rawBody = await request.text();
+    } catch {
+      return errorResponse(400, 'Failed to read request body');
+    }
+
     let body;
     try {
-      body = await request.json();
+      body = JSON.parse(rawBody);
     } catch {
       return errorResponse(400, 'Invalid JSON body');
+    }
+
+    const signingSecrets = [env.SIGNING_KEY];
+    if (env.SIGNING_KEY_OLD) signingSecrets.push(env.SIGNING_KEY_OLD);
+
+    const valid = await verifySignature(request.headers, rawBody, signingSecrets);
+    if (!valid) {
+      return errorResponse(401, 'Unauthorized: invalid or missing request signature');
     }
 
     const ip = getClientIP(request);
