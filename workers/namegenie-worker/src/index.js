@@ -1,73 +1,41 @@
-const GENERATION_PROMPT = `You are a Chinese naming expert. Generate 5 Chinese given names (名) based on the preferences below.
+const GENERATION_PROMPT = `You are a Chinese naming expert. Generate 5 Chinese given names (名). Each time you MUST produce DIFFERENT names — be creative and avoid repeating names from previous generations.
 
 Preferences:
 - Gender: {{gender}}
 - Phonetic input: {{phoneticInput}}
-- Desired meaning: {{meanings}}
+- Desired meanings: {{meanings}}
 - Character count: {{characterCount}}
-- Surname (姓): {{surname}}
 
 Rules:
-1. You generate ONLY given names (名), {{characterCount}} characters each. The surname (姓) is just shown for reference — do NOT include it in your output.
-2. You MUST take ALL preferences seriously: gender, phonetic input, meanings, and surname all matter. If phonetic input or surname is provided, your names MUST consider them.
-3. Names should sound pleasant in Mandarin Chinese
-4. AVOID: 3rd-tone + 3rd-tone combinations (e.g., 李有 - too awkward to pronounce)
-5. AVOID: names that are very common in the 2010s (e.g., 子轩, 梓涵, 浩宇)
-6. AVOID: characters with negative or embarrassing homophones
-7. AVOID: characters that look like they belong to an older generation
-8. When phonetic input is provided, you MUST choose characters whose Mandarin pinyin pronunciation closely approximates the sound of the phonetic input. This is a top priority. Example: Smith → 思密 (Sī Mì) or 思明 (Sī Míng)
-9. If meanings are provided, prioritize characters that carry those meanings
-10. If a surname (姓) is provided, use it to guide name selection — the given name should sound harmonious after that surname
-
-Return ONLY valid JSON, no markdown, no explanation:
-{
-  "candidates": [
-    {
-      "hanzi": "思远",
-      "pinyin": "Sī Yuǎn",
-      "meaning": "thoughtful and far-reaching",
-      "relevance": 0.95
-    }
-  ]
-}
-
-CRITICAL: hanzi must contain {{characterCount}} characters — the given name ONLY, never include the surname (姓).`;
-
-const RANDOM_PROMPT = `You are a Chinese naming expert. Generate 5 Chinese given names (名) in random/surprise mode.
-
-Preferences (may be empty — fill in your own creativity if so):
-- Gender: {{gender}}
-- Character count: {{characterCount}}
-- Surname (姓): {{surname}}
-
-Rules:
-1. You generate ONLY given names (名). The surname (姓) is just shown for reference — do NOT include it in your output.
-2. If a surname (姓) is provided, use it to guide name selection — the given name should sound harmonious after that surname
-3. Return 5 names across 3 DISTINCT STYLES:
+1. Return 5 names across 3 DISTINCT STYLES:
    - Two names: CLASSIC / TRADITIONAL — timeless, elegant, established characters
    - Two names: MODERN / POPULAR — contemporary feel, trendy characters
    - One name: UNIQUE / LITERARY — rare characters, poetic or artistic flair
-4. Names should sound pleasant in Mandarin Chinese
-5. AVOID: 3rd-tone + 3rd-tone combinations
-6. AVOID: names that are very common in the 2010s (e.g., 子轩, 梓涵, 浩宇)
-7. AVOID: characters with negative or embarrassing homophones
-8. If gender is provided, respect it; otherwise choose freely
-9. If character count is provided, respect it; otherwise mix 2-character names
-10. Label each candidate with its style in the meaning field, e.g. "Classic — bright radiance"
+2. STRONGLY VARY your results each time. Do NOT reuse names from previous outputs.
+3. Names should sound pleasant in Mandarin Chinese
+4. AVOID: 3rd-tone + 3rd-tone combinations
+5. AVOID: names that are very common in the 2010s
+6. AVOID: characters with negative or embarrassing homophones
+7. When phonetic input is provided, you MUST choose characters whose pinyin approximates the sound. This is top priority.
+8. If meanings are provided, prioritize characters that carry those meanings
+9. Label each candidate with its style in the meaning field, e.g. "Classic — English meaning"
+10. If gender is provided, respect it; otherwise choose freely
+
+Each given name MUST be {{characterCount}} characters.
 
 Return valid JSON ONLY, no markdown, no explanation:
 {
   "candidates": [
     {
-      "hanzi": "思远",
-      "pinyin": "Sī Yuǎn",
-      "meaning": "Classic — thoughtful and far-reaching",
+      "hanzi": "example given name",
+      "pinyin": "Example Pinyin",
+      "meaning": "Classic — English meaning",
       "relevance": 0.9
     }
   ]
 }
 
-CRITICAL: hanzi must contain only the given name — never include the surname (姓).`;
+CRITICAL: hanzi must contain only the given name — never include the surname.`;
 
 const DETAIL_PROMPT = `You are a Chinese naming expert. Provide a detailed breakdown of the Chinese name below.
 
@@ -264,25 +232,16 @@ export default {
       };
     }
 
-    const { action, random, ...params } = body;
+    const { action, ...params } = body;
 
     let prompt;
     if (action === 'generate') {
-      if (random) {
-        prompt = buildPrompt(RANDOM_PROMPT, {
-          gender: params.gender || '',
-          characterCount: params.characterCount || '',
-          surname: params.surname || '',
-        });
-      } else {
-        prompt = buildPrompt(GENERATION_PROMPT, {
-          gender: params.gender || 'neutral',
-          phoneticInput: params.phoneticInput || '',
-          meanings: params.meanings ? params.meanings.join(', ') : '',
-          characterCount: params.characterCount || '2',
-          surname: params.surname || '',
-        });
-      }
+      prompt = buildPrompt(GENERATION_PROMPT, {
+        gender: params.gender || '',
+        phoneticInput: params.phoneticInput || '',
+        meanings: params.meanings ? params.meanings.join(', ') : '',
+        characterCount: params.characterCount || '2',
+      });
     } else if (action === 'detail') {
       prompt = buildPrompt(DETAIL_PROMPT, {
         hanzi: params.hanzi || '',

@@ -9,7 +9,6 @@ actor NameGenieAPI {
     private let decoder: JSONDecoder
     private let deviceID: String
 
-    private var resultCache: [String: [NameCandidate]] = [:]
     private var detailCache: [String: NameDetail] = [:]
 
     private init() {
@@ -44,16 +43,13 @@ actor NameGenieAPI {
         return request
     }
 
-    func generateNames(preferences: GenerationPreferences, random: Bool = false) async throws -> [NameCandidate] {
+    func generateNames(preferences: GenerationPreferences) async throws -> [NameCandidate] {
         var body: [String: Any] = [
             "action": "generate",
+            "random": true,
             "gender": preferences.gender.rawValue,
             "characterCount": preferences.characterCount.rawValue,
         ]
-
-        if random {
-            body["random"] = true
-        }
 
         if !preferences.phoneticInput.isEmpty {
             body["phoneticInput"] = preferences.phoneticInput
@@ -67,27 +63,10 @@ actor NameGenieAPI {
             body["surname"] = preferences.surname
         }
 
-        let cacheKey = cacheKey(for: body)
-        if !random, let cached = resultCache[cacheKey] {
-            return cached
-        }
-
         let request = try makeRequest(body: body)
 
         let (data, _) = try await session.data(for: request)
-        let response = try decoder.decode(GenerateResponse.self, from: data)
-
-        if !random {
-            resultCache[cacheKey] = response.candidates
-            if resultCache.count > 5 {
-                let keys = resultCache.keys
-                if let oldest = keys.first {
-                    resultCache.removeValue(forKey: oldest)
-                }
-            }
-        }
-
-        return response.candidates
+        return try decoder.decode(GenerateResponse.self, from: data).candidates
     }
 
     func nameDetail(hanzi: String, pinyin: String) async throws -> NameDetail {
@@ -109,16 +88,5 @@ actor NameGenieAPI {
 
         detailCache[cacheKey] = detail
         return detail
-    }
-
-    private func cacheKey(for body: [String: Any]) -> String {
-        let sortedKeys = body.keys.sorted()
-        var components: [String] = []
-        for key in sortedKeys {
-            if let value = body[key] {
-                components.append("\(key)=\(value)")
-            }
-        }
-        return components.joined(separator: "&")
     }
 }

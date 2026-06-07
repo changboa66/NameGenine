@@ -8,10 +8,10 @@ struct GenerateViewContent: View {
     @State private var hasGenerated = false
     @State private var selectedName: NameCandidate?
     @State private var showDetail = false
-    @State private var isRandomMode = false
     @State private var pandaLoaded = false
     @State private var scrollToResults = false
     @State private var showAllMeanings = false
+    @FocusState private var isInputFocused: Bool
 
     var body: some View {
         ScrollViewReader { proxy in
@@ -29,6 +29,7 @@ struct GenerateViewContent: View {
                     .padding(.bottom, 16)
                 }
             }
+            .scrollDismissesKeyboard(.immediately)
             .background(
                 LinearGradient(
                     colors: [Color.accentColor.opacity(0.12), Color(.systemGroupedBackground)],
@@ -41,7 +42,7 @@ struct GenerateViewContent: View {
             .animation(.easeInOut(duration: 0.25), value: isLoading)
             .refreshable {
                 if !candidates.isEmpty {
-                    generate(random: isRandomMode)
+                    generate()
                 }
             }
             .onChange(of: scrollToResults) { _, newValue in
@@ -99,13 +100,13 @@ struct GenerateViewContent: View {
 
     private var preferencesSection: some View {
         VStack(spacing: 8) {
-            generateCard
+            genderCountCard
             meaningsCard
             yourNameCard
         }
     }
 
-    private var generateCard: some View {
+    private var genderCountCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading, spacing: 8) {
                 HStack(spacing: 4) {
@@ -220,27 +221,19 @@ struct GenerateViewContent: View {
             HStack(spacing: 4) {
                 Image(systemName: "person.text.rectangle")
                     .font(.system(size: 12))
-                Text("YOUR NAME")
+                Text("PRONUNCIATION")
             }
             .font(.system(size: 12, weight: .semibold))
             .foregroundStyle(Color.accentColor)
 
             VStack(alignment: .leading, spacing: 8) {
-                Text("SURNAME (OPTIONAL)")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(.secondary)
-                TextField("e.g. Wang, Li", text: $preferences.surname)
-                    .textFieldStyle(.roundedBorder)
-                    .autocorrectionDisabled()
-            }
-
-            VStack(alignment: .leading, spacing: 8) {
-                Text("PRONUNCIATION")
+                Text("APPROXIMATE YOUR SOUND")
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(.secondary)
                 TextField("e.g. Christopher", text: $preferences.phoneticInput)
                     .textFieldStyle(.roundedBorder)
                     .autocorrectionDisabled()
+                    .focused($isInputFocused)
             }
         }
         .padding(16)
@@ -273,7 +266,7 @@ struct GenerateViewContent: View {
 
     private var luckyButton: some View {
         Button {
-            generate(random: true)
+            generate()
         } label: {
             Text("🎲 I'm Feeling Lucky")
                 .font(.system(size: 15, weight: .medium))
@@ -303,10 +296,6 @@ struct GenerateViewContent: View {
                     .font(.system(size: 13))
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
-                Button("Try Again") {
-                    generate(random: isRandomMode)
-                }
-                .buttonStyle(.bordered)
             }
             .padding(.vertical, 32)
         } else if hasGenerated && candidates.isEmpty && !isLoading {
@@ -330,49 +319,33 @@ struct GenerateViewContent: View {
                         selectedName = candidate
                         showDetail = true
                     } label: {
-                        NameResultRow(
-                            candidate: candidate,
-                            surname: preferences.surname
-                        )
+                        NameResultRow(candidate: candidate)
                     }
                     .buttonStyle(PressButtonStyle())
                 }
 
-                if isRandomMode {
-                    Button("More Names 🎲") {
-                        loadMore(random: true)
-                    }
-                    .font(.system(size: 13, weight: .medium))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
-                    .background(Color(.secondarySystemBackground))
-                    .clipShape(.rect(cornerRadius: 10))
-                } else {
-                    Button("Generate More") {
-                        generate(random: false)
-                    }
-                    .font(.system(size: 13, weight: .medium))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
-                    .background(Color(.secondarySystemBackground))
-                    .clipShape(.rect(cornerRadius: 10))
+                Button("More Names 🎲") {
+                    loadMore()
                 }
+                .font(.system(size: 13, weight: .medium))
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 8)
+                .background(Color(.secondarySystemBackground))
+                .clipShape(.rect(cornerRadius: 10))
             }
         }
     }
 
-    private func generate(random: Bool) {
+    private func generate() {
+        isInputFocused = false
+        preferences.phoneticInput = preferences.phoneticInput.trimmingCharacters(in: .whitespaces)
         isLoading = true
-        isRandomMode = random
         errorMessage = nil
         candidates = []
 
         Task {
             do {
-                let result = try await NameGenieAPI.shared.generateNames(
-                    preferences: preferences,
-                    random: random
-                )
+                let result = try await NameGenieAPI.shared.generateNames(preferences: preferences)
                 candidates = result
                 hasGenerated = true
                 scrollToResults = true
@@ -383,16 +356,14 @@ struct GenerateViewContent: View {
         }
     }
 
-    private func loadMore(random: Bool) {
+    private func loadMore() {
+        isInputFocused = false
         isLoading = true
         errorMessage = nil
 
         Task {
             do {
-                let result = try await NameGenieAPI.shared.generateNames(
-                    preferences: preferences,
-                    random: random
-                )
+                let result = try await NameGenieAPI.shared.generateNames(preferences: preferences)
                 candidates += result
             } catch {
                 errorMessage = "Unable to generate names. Please check your connection and try again."
@@ -421,79 +392,11 @@ struct GenerateFlow: View {
 
 struct NameResultRow: View {
     let candidate: NameCandidate
-    let surname: String
 
     @ObservedObject private var pronunciationService = PronunciationService.shared
 
-    private static let pinyinToHanzi: [String: String] = [
-        "li": "李", "wang": "王", "zhang": "张", "liu": "刘", "chen": "陈",
-        "yang": "杨", "zhao": "赵", "huang": "黄", "zhou": "周", "wu": "吴",
-        "xu": "徐", "sun": "孙", "hu": "胡", "zhu": "朱", "gao": "高",
-        "lin": "林", "he": "何", "guo": "郭", "ma": "马", "luo": "罗",
-        "liang": "梁", "song": "宋", "zheng": "郑", "xie": "谢", "han": "韩",
-        "tang": "唐", "feng": "冯", "yu": "于", "dong": "董", "xiao": "萧",
-        "cheng": "程", "cao": "曹", "yuan": "袁", "deng": "邓",
-        "fu": "傅", "shen": "沈", "zeng": "曾", "peng": "彭", "lv": "吕",
-        "su": "苏", "lu": "卢", "jiang": "蒋", "cai": "蔡", "jia": "贾",
-        "ding": "丁", "wei": "魏", "xue": "薛", "ye": "叶", "pan": "潘",
-        "du": "杜", "dai": "戴", "xia": "夏", "tian": "田", "ren": "任",
-        "fang": "方", "yao": "姚", "tan": "谭", "liao": "廖",
-        "zou": "邹", "xiong": "熊", "jin": "金", "hao": "郝",
-        "kong": "孔", "bai": "白", "cui": "崔", "kang": "康", "mao": "毛",
-        "qiu": "邱", "qin": "秦", "gu": "顾",
-        "hou": "侯", "shao": "邵", "meng": "孟", "long": "龙", "wan": "万",
-        "duan": "段", "qian": "钱", "yin": "尹",
-        "yi": "易", "chang": "常",
-        "qiao": "乔", "lai": "赖", "gong": "龚",
-    ]
-
-    private static let hanziToPinyin: [String: String] = {
-        var map: [String: String] = [:]
-        for (pinyin, hanzi) in pinyinToHanzi {
-            map[hanzi] = pinyin.prefix(1).uppercased() + pinyin.dropFirst()
-        }
-        return map
-    }()
-
-    private var surnameHanzi: String {
-        if surname.range(of: "\\p{Han}", options: .regularExpression) != nil {
-            return surname
-        }
-        return Self.pinyinToHanzi[surname.lowercased()] ?? ""
-    }
-
-    private var surnamePinyin: String {
-        if surname.range(of: "\\p{Han}", options: .regularExpression) != nil {
-            return Self.hanziToPinyin[surname] ?? surname
-        }
-        return surname
-    }
-
-    private var displayName: String {
-        if surnameHanzi.isEmpty { return candidate.hanzi }
-        return "\(surnameHanzi)\(candidate.hanzi)"
-    }
-
-    private var displayPinyin: String {
-        if surnamePinyin.isEmpty { return candidate.pinyin }
-        return "\(surnamePinyin) \(candidate.pinyin)"
-    }
-
-    private var displaySurname: String {
-        if surname.range(of: "\\p{Han}", options: .regularExpression) != nil {
-            return surname
-        }
-        return Self.pinyinToHanzi[surname.lowercased()] ?? ""
-    }
-
-    private var displayName: String {
-        if displaySurname.isEmpty { return candidate.hanzi }
-        return "\(displaySurname)\(candidate.hanzi)"
-    }
-
-    private var displayPinyin: String {
-        if displaySurname.isEmpty { return candidate.pinyin }
-        return "\(displaySurname) \(candidate.pinyin)"
+    private var isPlayingThis: Bool {
+        pronunciationService.isSpeaking && pronunciationService.currentHanzi == candidate.hanzi
     }
 
     private var styleColor: Color {
@@ -510,7 +413,7 @@ struct NameResultRow: View {
             HStack(spacing: 16) {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 8) {
-                        Text(displayName)
+                        Text(candidate.hanzi)
                             .font(.system(size: 22))
                         if let style = candidate.style {
                             Text(style)
@@ -522,7 +425,7 @@ struct NameResultRow: View {
                                 .clipShape(.rect(cornerRadius: 4))
                         }
                     }
-                    Text(displayPinyin)
+                    Text(candidate.pinyin)
                         .font(.system(size: 12))
                         .foregroundStyle(.secondary)
                 }

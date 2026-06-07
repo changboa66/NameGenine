@@ -5,6 +5,10 @@ struct FavoritesView: View {
     @Query(sort: \FavoriteName.createdAt, order: .reverse) private var favorites: [FavoriteName]
     @Environment(\.modelContext) private var modelContext
 
+    private var groupedFavorites: [(DateGroup, [FavoriteName])] {
+        favorites.groupedByDate()
+    }
+
     var body: some View {
         Group {
             if favorites.isEmpty {
@@ -33,29 +37,65 @@ struct FavoritesView: View {
 
     private var listContent: some View {
         ScrollView {
-            LazyVStack(spacing: 12) {
-                ForEach(favorites) { favorite in
-                    NavigationLink {
-                        NameDetailView(
-                            hanzi: favorite.hanzi,
-                            pinyin: favorite.pinyin,
-                            meaning: favorite.meaning,
-                            cachedDetailData: favorite.detailData
-                        )
-                    } label: {
-                        FavoriteRow(favorite: favorite)
-                    }
-                    .buttonStyle(.plain)
-                    .swipeActions(edge: .trailing) {
-                        Button("Delete", role: .destructive) {
-                            modelContext.delete(favorite)
+            LazyVStack(spacing: 0, pinnedViews: .sectionHeaders) {
+                ForEach(groupedFavorites, id: \.0) { group, items in
+                    Section {
+                        ForEach(items) { favorite in
+                            NavigationLink {
+                                NameDetailView(
+                                    hanzi: favorite.hanzi,
+                                    pinyin: favorite.pinyin,
+                                    meaning: favorite.meaning,
+                                    cachedDetailData: favorite.detailData
+                                )
+                            } label: {
+                                FavoriteRow(favorite: favorite)
+                            }
+                            .buttonStyle(.plain)
+                            .swipeActions(edge: .trailing) {
+                                Button("Delete", role: .destructive) {
+                                    modelContext.delete(favorite)
+                                }
+                            }
                         }
+                    } header: {
+                        sectionHeader(group)
                     }
                 }
             }
             .padding(.horizontal, 20)
             .padding(.vertical, 16)
         }
+    }
+
+    private func sectionHeader(_ group: DateGroup) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: iconName(for: group))
+                .font(.system(size: 11, weight: .semibold))
+            Text(group.title)
+                .font(.system(size: 13, weight: .semibold))
+            Spacer()
+            Text("\(favoritesCount(in: group)) 个")
+                .font(.system(size: 12))
+                .foregroundStyle(.secondary)
+        }
+        .foregroundStyle(.primary)
+        .padding(.horizontal, 4)
+        .padding(.vertical, 10)
+        .background(Color(.systemGroupedBackground))
+    }
+
+    private func iconName(for group: DateGroup) -> String {
+        switch group {
+        case .today: return "sun.max"
+        case .yesterday: return "moon.stars"
+        case .thisWeek: return "calendar"
+        case .earlier: return "clock"
+        }
+    }
+
+    private func favoritesCount(in group: DateGroup) -> Int {
+        groupedFavorites.first { $0.0 == group }?.1.count ?? 0
     }
 }
 
@@ -78,6 +118,28 @@ struct FavoritesFlow: View {
 struct FavoriteRow: View {
     let favorite: FavoriteName
 
+    private var dateLabel: String {
+        let calendar = Calendar.current
+        let now = Date()
+
+        if calendar.isDateInToday(favorite.createdAt) {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "HH:mm"
+            return formatter.string(from: favorite.createdAt)
+        } else if calendar.isDateInYesterday(favorite.createdAt) {
+            return "昨天"
+        } else if calendar.isDate(favorite.createdAt, equalTo: now, toGranularity: .weekOfYear) {
+            let formatter = DateFormatter()
+            formatter.locale = Locale(identifier: "zh_CN")
+            formatter.dateFormat = "EEE"
+            return formatter.string(from: favorite.createdAt)
+        } else {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "M/d"
+            return formatter.string(from: favorite.createdAt)
+        }
+    }
+
     var body: some View {
         HStack(spacing: 16) {
             Text(favorite.hanzi)
@@ -94,6 +156,14 @@ struct FavoriteRow: View {
             }
 
             Spacer()
+
+            Text(dateLabel)
+                .font(.system(size: 11))
+                .foregroundStyle(.tertiary)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 3)
+                .background(Color(.tertiarySystemBackground))
+                .clipShape(.rect(cornerRadius: 4))
 
             Image(systemName: "chevron.right")
                 .font(.caption)
