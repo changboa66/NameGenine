@@ -25,8 +25,11 @@ Rules:
 8. If meanings are provided, prioritize characters that carry those meanings
 9. Label each candidate with its style in the meaning field, e.g. "Classic — English meaning"
 10. If gender is provided, respect it; otherwise choose freely
+11. IMPORTANT: pinyin MUST have each character's pinyin separated by a space. For a 3-character name like "李小明", pinyin MUST be "Li Xiao Ming" — NOT "Li Xiaoming". Each character gets its own pinyin word.
 
 CRITICAL: Each hanzi value MUST contain EXACTLY ${charCount} characters. Not ${charCount === '3' ? '2, not 1' : '3, not 1'} — exactly ${charCount}. Count every character carefully before outputting.
+
+CRITICAL: pinyin MUST have exactly ${charCount} space-separated words — one word per hanzi character. For example, a 3-character name's pinyin must be "Li Jian Ping" (3 words), NOT "Li Jianping" (2 words). You MUST capitalize only the first letter of each syllable.
 
 Return valid JSON ONLY, no markdown, no explanation:
 {
@@ -327,6 +330,36 @@ export default {
         parsed = JSON.parse(content);
       } catch {
         return errorResponse(502, 'Invalid JSON from AI API', rateLimitHeaders());
+      }
+
+      // Fix pinyin spacing for generate results
+      if (action === 'generate' && parsed.candidates) {
+        for (const c of parsed.candidates) {
+          if (c.hanzi && c.pinyin) {
+            const expected = c.hanzi.length;
+            const parts = c.pinyin.split(/\s+/).filter(Boolean);
+            if (parts.length !== expected) {
+              // Try splitting merged parts on uppercase letters
+              const expanded = [];
+              for (const part of parts) {
+                let current = '';
+                for (let i = 0; i < part.length; i++) {
+                  const ch = part[i];
+                  if (i > 0 && ch >= 'A' && ch <= 'Z' && current) {
+                    expanded.push(current);
+                    current = ch;
+                  } else {
+                    current += ch;
+                  }
+                }
+                if (current) expanded.push(current);
+              }
+              if (expanded.length === expected) {
+                c.pinyin = expanded.join(' ');
+              }
+            }
+          }
+        }
       }
 
       const result = new Response(JSON.stringify(parsed), {

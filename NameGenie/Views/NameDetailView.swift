@@ -20,7 +20,7 @@ struct NameDetailView: View {
     }
 
     private var pinyinParts: [String] {
-        pinyin.split(separator: " ").map(String.init)
+        pinyin.formattedPinyin(hanziCount: hanzi.count).split(separator: " ").map(String.init)
     }
 
     private var isPlaying: Bool {
@@ -34,7 +34,7 @@ struct NameDetailView: View {
 
                 if isLoading {
                     LottieView("panda-fly", loopMode: .loop)
-                        .frame(width: 120, height: 120)
+                        .frame(width: 180, height: 180)
                         .padding(.vertical, 40)
                         .transition(.opacity)
                 } else if let errorMessage {
@@ -168,17 +168,18 @@ struct NameDetailView: View {
 
     private func errorSection(_ message: String) -> some View {
         VStack(spacing: 12) {
-            Image(systemName: "exclamationmark.circle")
-                .font(.title2)
-                .foregroundStyle(.secondary)
+            PausedLottieView(name: "panda-sleep", progress: 0.5)
+                .frame(width: 120, height: 120)
             Text(message)
                 .font(.system(size: 13))
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
+                .offset(y: -20)
             Button("Retry") {
                 Task { await loadDetail() }
             }
             .buttonStyle(.bordered)
+            .offset(y: -10)
         }
         .padding(.vertical, 40)
     }

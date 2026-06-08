@@ -112,7 +112,7 @@ struct FavoriteRow: View {
                 .font(.system(size: 22, weight: .medium))
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(favorite.pinyin)
+                Text(favorite.pinyin.formattedPinyin(hanziCount: favorite.hanzi.count))
                     .font(.system(size: 13))
                     .foregroundStyle(.secondary)
                 HStack(spacing: 4) {

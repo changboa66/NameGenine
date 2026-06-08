@@ -293,20 +293,28 @@ struct GenerateViewContent: View {
     private var resultsSection: some View {
         if let errorMessage {
             VStack(spacing: 12) {
-                Image(systemName: "exclamationmark.circle")
-                    .font(.title2)
-                    .foregroundStyle(.secondary)
+                PausedLottieView(name: "panda-sleep", progress: 0.5)
+                    .frame(width: 120, height: 120)
+                    .offset(y: -40)
                 Text(errorMessage)
                     .font(.system(size: 13))
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
+                    .offset(y: -60)
             }
             .padding(.vertical, 32)
         } else if hasGenerated && candidates.isEmpty && !isLoading {
-            Text("No names generated. Try different preferences.")
-                .font(.system(size: 13))
-                .foregroundStyle(.secondary)
-                .padding(.vertical, 32)
+            VStack(spacing: 12) {
+                PausedLottieView(name: "panda-sleep", progress: 0.5)
+                    .frame(width: 120, height: 120)
+                    .offset(y: -40)
+                Text("No names generated. Try different preferences.")
+                    .font(.system(size: 13))
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .offset(y: -60)
+            }
+            .padding(.vertical, 32)
         } else if !candidates.isEmpty {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(spacing: 4) {
@@ -355,7 +363,7 @@ struct GenerateViewContent: View {
                 hasGenerated = true
                 scrollToResults = true
             } catch {
-                errorMessage = "Unable to generate names. Please check your connection and try again."
+                errorMessage = "Please check your connection and try again."
             }
             isLoading = false
         }
@@ -371,7 +379,7 @@ struct GenerateViewContent: View {
                 let result = try await NameGenieAPI.shared.generateNames(preferences: preferences)
                 candidates += result
             } catch {
-                errorMessage = "Unable to generate names. Please check your connection and try again."
+                errorMessage = "Please check your connection and try again."
             }
             isLoading = false
         }
@@ -430,7 +438,7 @@ struct NameResultRow: View {
                                 .clipShape(.rect(cornerRadius: 4))
                         }
                     }
-                    Text(candidate.pinyin)
+                    Text(candidate.pinyin.formattedPinyin(hanziCount: candidate.hanzi.count))
                         .font(.system(size: 12))
                         .foregroundStyle(.secondary)
                 }
