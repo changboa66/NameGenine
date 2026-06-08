@@ -128,7 +128,7 @@ struct GenerateViewContent: View {
                     Image(systemName: "textformat.characters.arrow.left.and.right")
                         .font(.system(size: 12))
                         .frame(width: 24)
-                    Text("CHARACTER COUNT")
+                    Text("CHARS")
                 }
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(Color.accentColor)
