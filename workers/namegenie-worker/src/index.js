@@ -169,8 +169,19 @@ async function checkRateLimit(kv, type, identifier, limit, windowSec) {
   return { allowed: true, remaining: limit - timestamps.length, reset: now + windowSec };
 }
 
+async function recordDevice(db, deviceId) {
+  if (!db || !deviceId) return;
+  try {
+    const now = Math.floor(Date.now() / 1000);
+    await db.prepare(
+      `INSERT INTO devices (id, first_seen, last_seen, req_count) VALUES (?, ?, ?, 1)
+       ON CONFLICT(id) DO UPDATE SET last_seen = excluded.last_seen, req_count = req_count + 1`
+    ).bind(deviceId, now, now).run();
+  } catch {}
+}
+
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     if (request.method !== 'POST') {
       return errorResponse(405, 'Method not allowed. Use POST.');
     }
@@ -202,8 +213,21 @@ export default {
       return errorResponse(401, 'Unauthorized: invalid or missing request signature');
     }
 
-    const ip = getClientIP(request);
     const deviceId = request.headers.get('X-Device-ID') || '';
+
+    // Blacklist check
+    if (deviceId && env.namegenie_devices) {
+      try {
+        const device = await env.namegenie_devices.prepare(
+          'SELECT blacklisted FROM devices WHERE id = ?'
+        ).bind(deviceId).first();
+        if (device && device.blacklisted === 1) {
+          return errorResponse(403, 'Device is blacklisted');
+        }
+      } catch {}
+    }
+
+    const ip = getClientIP(request);
     const kv = env.RATE_LIMIT_KV;
 
     const ipCheck = await checkRateLimit(kv, 'ip', ip, 100, 60);
@@ -305,9 +329,11 @@ export default {
         return errorResponse(502, 'Invalid JSON from AI API', rateLimitHeaders());
       }
 
-      return new Response(JSON.stringify(parsed), {
+      const result = new Response(JSON.stringify(parsed), {
         headers: { 'Content-Type': 'application/json', ...rateLimitHeaders() },
       });
+      ctx.waitUntil(recordDevice(env.namegenie_devices, deviceId));
+      return result;
     } catch (err) {
       clearTimeout(timeoutId);
       if (err.name === 'AbortError') {

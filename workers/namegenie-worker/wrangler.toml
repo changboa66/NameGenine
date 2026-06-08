@@ -9,9 +9,21 @@ DEEPSEEK_MODEL = "deepseek-chat"
 binding = "RATE_LIMIT_KV"
 id = "e65f790d4be94a23983a94ba31e1b220"
 
+[[d1_databases]]
+binding = "namegenie_devices"
+database_name = "namegenie-devices"
+database_id = "1e65a411-c2ab-4c32-8ebe-d09a6aa862c6"
+migrations_dir = "migrations"
+
 [env.production]
 vars = { ENVIRONMENT = "production", DEEPSEEK_MODEL = "deepseek-chat" }
 
 [[env.production.kv_namespaces]]
 binding = "RATE_LIMIT_KV"
 id = "e65f790d4be94a23983a94ba31e1b220"
+
+[[env.production.d1_databases]]
+binding = "namegenie_devices"
+database_name = "namegenie-devices"
+database_id = "1e65a411-c2ab-4c32-8ebe-d09a6aa862c6"
+migrations_dir = "migrations"

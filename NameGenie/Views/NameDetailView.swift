@@ -33,16 +33,21 @@ struct NameDetailView: View {
                 headerSection
 
                 if isLoading {
-                    ProgressView()
+                    LottieView("panda-fly", loopMode: .loop)
+                        .frame(width: 120, height: 120)
                         .padding(.vertical, 40)
+                        .transition(.opacity)
                 } else if let errorMessage {
                     errorSection(errorMessage)
                 } else if let detail {
                     detailSections(detail)
+                        .transition(.opacity)
                 }
             }
             .padding(.horizontal, 20)
             .padding(.vertical, 16)
+            .animation(.default, value: isLoading)
+            .animation(.default, value: detail != nil)
         }
         .navigationTitle("Name Details")
         .navigationBarTitleDisplayMode(.inline)
