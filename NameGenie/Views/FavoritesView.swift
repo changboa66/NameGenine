@@ -37,7 +37,7 @@ struct FavoritesView: View {
 
     private var listContent: some View {
         ScrollView {
-            LazyVStack(spacing: 0, pinnedViews: .sectionHeaders) {
+            LazyVStack(spacing: 8, pinnedViews: .sectionHeaders) {
                 ForEach(groupedFavorites, id: \.0) { group, items in
                     Section {
                         ForEach(items) { favorite in
@@ -69,19 +69,19 @@ struct FavoritesView: View {
     }
 
     private func sectionHeader(_ group: DateGroup) -> some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 8) {
             Image(systemName: iconName(for: group))
-                .font(.system(size: 11, weight: .semibold))
+                .font(.system(size: 11, weight: .medium))
             Text(group.title)
-                .font(.system(size: 13, weight: .semibold))
+                .font(.system(size: 13, weight: .medium))
             Spacer()
             Text("\(favoritesCount(in: group)) 个")
-                .font(.system(size: 12))
+                .font(.system(size: 11, weight: .medium))
                 .foregroundStyle(.secondary)
         }
         .foregroundStyle(.primary)
         .padding(.horizontal, 4)
-        .padding(.vertical, 10)
+        .padding(.vertical, 12)
         .background(Color(.systemGroupedBackground))
     }
 
@@ -143,14 +143,14 @@ struct FavoriteRow: View {
     var body: some View {
         HStack(spacing: 16) {
             Text(favorite.hanzi)
-                .font(.system(size: 24))
+                .font(.system(size: 22, weight: .medium))
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(favorite.pinyin)
                     .font(.system(size: 13))
                     .foregroundStyle(.secondary)
                 Text(favorite.meaning)
-                    .font(.system(size: 12))
+                    .font(.system(size: 13))
                     .foregroundStyle(.tertiary)
                     .lineLimit(1)
             }
@@ -158,16 +158,12 @@ struct FavoriteRow: View {
             Spacer()
 
             Text(dateLabel)
-                .font(.system(size: 11))
+                .font(.system(size: 11, weight: .medium))
                 .foregroundStyle(.tertiary)
                 .padding(.horizontal, 8)
-                .padding(.vertical, 3)
+                .padding(.vertical, 4)
                 .background(Color(.tertiarySystemBackground))
                 .clipShape(.rect(cornerRadius: 4))
-
-            Image(systemName: "chevron.right")
-                .font(.caption)
-                .foregroundStyle(.quaternary)
         }
         .padding(16)
         .background(Color(.secondarySystemBackground))
