@@ -285,7 +285,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.5;
+				MARKETING_VERSION = 0.6;
 				PRODUCT_BUNDLE_IDENTIFIER = com.zhangchangbao.NameGenie;
 				PRODUCT_NAME = NameGenie;
 				SDKROOT = iphoneos;
@@ -364,7 +364,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.5;
+				MARKETING_VERSION = 0.6;
 				PRODUCT_BUNDLE_IDENTIFIER = com.zhangchangbao.NameGenie;
 				PRODUCT_NAME = NameGenie;
 				SDKROOT = iphoneos;
