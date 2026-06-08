@@ -10,7 +10,8 @@ binding = "RATE_LIMIT_KV"
 id = "e65f790d4be94a23983a94ba31e1b220"
 
 [env.production]
-vars = { ENVIRONMENT = "production" }
+vars = { ENVIRONMENT = "production", DEEPSEEK_MODEL = "deepseek-chat" }
 
-[env.production.kv_namespaces]
-RATE_LIMIT_KV = "e65f790d4be94a23983a94ba31e1b220"
+[[env.production.kv_namespaces]]
+binding = "RATE_LIMIT_KV"
+id = "e65f790d4be94a23983a94ba31e1b220"

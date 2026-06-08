@@ -24,13 +24,15 @@ struct GenerationPreferences {
     enum CharacterCount: String, CaseIterable, Identifiable {
         case one = "1"
         case two = "2"
+        case three = "3"
 
         var id: Self { self }
 
         var label: String {
             switch self {
-            case .one: "Single character"
-            case .two: "Two characters"
+            case .one: "Single"
+            case .two: "Double"
+            case .three: "Triple"
             }
         }
     }
@@ -86,24 +88,24 @@ struct GenerationPreferences {
         var color: Color {
             switch self {
             case .wisdom: .orange
-            case .beauty: .blue
-            case .bravery: .red
-            case .kindness: .cyan
+            case .beauty: .pink
+            case .bravery: Color(red: 0.82, green: 0.18, blue: 0.18)
+            case .kindness: .mint
             case .nature: .green
             case .strength: .brown
             case .talent: .purple
             case .harmony: .teal
             case .joy: .yellow
-            case .prosperity: .indigo
-            case .elegance: .pink
+            case .prosperity: Color(red: 0.85, green: 0.65, blue: 0.0)
+            case .elegance: Color(red: 0.75, green: 0.35, blue: 0.60)
             case .virtue: .indigo
-            case .intelligence: .teal
-            case .peace: .mint
-            case .diligence: .brown
-            case .integrity: .blue
-            case .longevity: .red
-            case .fortune: .yellow
-            case .ambition: .purple
+            case .intelligence: .cyan
+            case .peace: Color(red: 0.42, green: 0.72, blue: 0.54)
+            case .diligence: Color(red: 0.54, green: 0.28, blue: 0.08)
+            case .integrity: Color(red: 0.20, green: 0.50, blue: 0.45)
+            case .longevity: Color(red: 0.92, green: 0.45, blue: 0.20)
+            case .fortune: Color(red: 0.96, green: 0.76, blue: 0.05)
+            case .ambition: Color(red: 0.50, green: 0.18, blue: 0.55)
             }
         }
     }

@@ -1,10 +1,15 @@
-const GENERATION_PROMPT = `You are a Chinese naming expert. Generate 5 Chinese given names (名). Each time you MUST produce DIFFERENT names — be creative and avoid repeating names from previous generations.
+function buildGeneratePrompt(vars) {
+  const charCount = vars.characterCount || '2';
+  const exampleHanzi = charCount === '3' ? 'example threechars' : 'example name';
+  const examplePinyin = charCount === '3' ? 'Example Three Pinyin' : 'Example Pinyin';
+
+  return `You are a Chinese naming expert. Generate 5 Chinese given names (名). Each time you MUST produce DIFFERENT names — be creative and avoid repeating names from previous generations.
 
 Preferences:
-- Gender: {{gender}}
-- Phonetic input: {{phoneticInput}}
-- Desired meanings: {{meanings}}
-- Character count: {{characterCount}}
+- Gender: ${vars.gender}
+- Phonetic input: ${vars.phoneticInput}
+- Desired meanings: ${vars.meanings}
+- Character count: ${charCount}
 
 Rules:
 1. Return 5 names across 3 DISTINCT STYLES:
@@ -21,14 +26,14 @@ Rules:
 9. Label each candidate with its style in the meaning field, e.g. "Classic — English meaning"
 10. If gender is provided, respect it; otherwise choose freely
 
-Each given name MUST be {{characterCount}} characters.
+CRITICAL: Each hanzi value MUST contain EXACTLY ${charCount} characters. Not ${charCount === '3' ? '2, not 1' : '3, not 1'} — exactly ${charCount}. Count every character carefully before outputting.
 
 Return valid JSON ONLY, no markdown, no explanation:
 {
   "candidates": [
     {
-      "hanzi": "example given name",
-      "pinyin": "Example Pinyin",
+      "hanzi": "${exampleHanzi}",
+      "pinyin": "${examplePinyin}",
       "meaning": "Classic — English meaning",
       "relevance": 0.9
     }
@@ -36,6 +41,7 @@ Return valid JSON ONLY, no markdown, no explanation:
 }
 
 CRITICAL: hanzi must contain only the given name — never include the surname.`;
+}
 
 const DETAIL_PROMPT = `You are a Chinese naming expert. Provide a detailed breakdown of the Chinese name below.
 
@@ -236,7 +242,7 @@ export default {
 
     let prompt;
     if (action === 'generate') {
-      prompt = buildPrompt(GENERATION_PROMPT, {
+      prompt = buildGeneratePrompt({
         gender: params.gender || '',
         phoneticInput: params.phoneticInput || '',
         meanings: params.meanings ? params.meanings.join(', ') : '',
