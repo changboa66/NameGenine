@@ -110,8 +110,9 @@ struct GenerateViewContent: View {
         VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading, spacing: 8) {
                 HStack(spacing: 4) {
-                    Image(systemName: "person.crop.circle")
+                    Image(systemName: "figure.stand.dress.line.vertical.figure")
                         .font(.system(size: 12))
+                        .frame(width: 24)
                     Text("GENDER")
                 }
                 .font(.system(size: 12, weight: .semibold))
@@ -124,8 +125,9 @@ struct GenerateViewContent: View {
 
             VStack(alignment: .leading, spacing: 8) {
                 HStack(spacing: 4) {
-                    Image(systemName: "textformat.size")
+                    Image(systemName: "textformat.characters.arrow.left.and.right")
                         .font(.system(size: 12))
+                        .frame(width: 24)
                     Text("CHARACTER COUNT")
                 }
                 .font(.system(size: 12, weight: .semibold))
@@ -148,12 +150,13 @@ struct GenerateViewContent: View {
     private var meaningsCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 4) {
-                Image(systemName: "tag")
+                Text("☯️")
                     .font(.system(size: 12))
+                    .frame(width: 24)
                 Text("MEANINGS")
             }
             .font(.system(size: 12, weight: .semibold))
-            .foregroundStyle(Color.accentColor)
+            .foregroundStyle(.purple)
 
             LazyVGrid(
                 columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 4),
@@ -219,8 +222,9 @@ struct GenerateViewContent: View {
     private var yourNameCard: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack(spacing: 4) {
-                Image(systemName: "person.text.rectangle")
+                Image(systemName: "waveform.path")
                     .font(.system(size: 12))
+                    .frame(width: 24)
                 Text("PRONUNCIATION")
             }
             .font(.system(size: 12, weight: .semibold))
@@ -308,6 +312,7 @@ struct GenerateViewContent: View {
                 HStack(spacing: 4) {
                     Image(systemName: "list.star")
                         .font(.system(size: 12))
+                        .frame(width: 24)
                     Text("RESULTS")
                 }
                 .font(.system(size: 12, weight: .semibold))

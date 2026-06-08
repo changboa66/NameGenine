@@ -1,9 +1,5 @@
-## Favorites Date Grouping
+## MODIFIED Requirements
 
-## Purpose
-
-Group and display saved name favorites in reverse-chronological order for easy browsing.
-## Requirements
 ### Requirement: Favorites grouped by date
 
 The favorites list SHALL group saved names by exact calendar day sections with English "Month Day" headers for easier browsing.
@@ -20,3 +16,10 @@ The favorites list SHALL group saved names by exact calendar day sections with E
 - **WHEN** a date has no favorites
 - **THEN** no section SHALL appear for that date
 
+## REMOVED Requirements
+
+### Requirement: Date labels on favorite items
+
+**Reason**: Date/time label on each row is redundant when section header already shows the date
+
+**Migration**: Remove the `dateLabel` computed property and badge UI from `FavoriteRow`. Section header serves as the date indicator.

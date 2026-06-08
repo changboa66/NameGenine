@@ -5,8 +5,8 @@ struct FavoritesView: View {
     @Query(sort: \FavoriteName.createdAt, order: .reverse) private var favorites: [FavoriteName]
     @Environment(\.modelContext) private var modelContext
 
-    private var groupedFavorites: [(DateGroup, [FavoriteName])] {
-        favorites.groupedByDate()
+    private var dayGroups: [DayGroup] {
+        favorites.groupedByDay()
     }
 
     var body: some View {
@@ -36,66 +36,33 @@ struct FavoritesView: View {
     }
 
     private var listContent: some View {
-        ScrollView {
-            LazyVStack(spacing: 8, pinnedViews: .sectionHeaders) {
-                ForEach(groupedFavorites, id: \.0) { group, items in
-                    Section {
-                        ForEach(items) { favorite in
-                            NavigationLink {
-                                NameDetailView(
-                                    hanzi: favorite.hanzi,
-                                    pinyin: favorite.pinyin,
-                                    meaning: favorite.meaning,
-                                    cachedDetailData: favorite.detailData
-                                )
-                            } label: {
-                                FavoriteRow(favorite: favorite)
-                            }
-                            .buttonStyle(.plain)
-                            .swipeActions(edge: .trailing) {
-                                Button("Delete", role: .destructive) {
-                                    modelContext.delete(favorite)
-                                }
-                            }
+        List {
+            ForEach(dayGroups) { group in
+                Section {
+                    ForEach(group.items) { favorite in
+                        NavigationLink {
+                            NameDetailView(
+                                hanzi: favorite.hanzi,
+                                pinyin: favorite.pinyin,
+                                meaning: favorite.meaning,
+                                cachedDetailData: favorite.detailData
+                            )
+                        } label: {
+                            FavoriteRow(favorite: favorite)
                         }
-                    } header: {
-                        sectionHeader(group)
                     }
+                    .onDelete { indexSet in
+                        for index in indexSet {
+                            modelContext.delete(group.items[index])
+                        }
+                    }
+                } header: {
+                    Text(group.displayDate)
+                        .foregroundStyle(Color.accentColor)
                 }
             }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 16)
         }
-    }
-
-    private func sectionHeader(_ group: DateGroup) -> some View {
-        HStack(spacing: 8) {
-            Image(systemName: iconName(for: group))
-                .font(.system(size: 11, weight: .medium))
-            Text(group.title)
-                .font(.system(size: 13, weight: .medium))
-            Spacer()
-            Text("\(favoritesCount(in: group)) 个")
-                .font(.system(size: 11, weight: .medium))
-                .foregroundStyle(.secondary)
-        }
-        .foregroundStyle(.primary)
-        .padding(.horizontal, 4)
-        .padding(.vertical, 12)
-        .background(Color(.systemGroupedBackground))
-    }
-
-    private func iconName(for group: DateGroup) -> String {
-        switch group {
-        case .today: return "sun.max"
-        case .yesterday: return "moon.stars"
-        case .thisWeek: return "calendar"
-        case .earlier: return "clock"
-        }
-    }
-
-    private func favoritesCount(in group: DateGroup) -> Int {
-        groupedFavorites.first { $0.0 == group }?.1.count ?? 0
+        .listStyle(.insetGrouped)
     }
 }
 
@@ -118,26 +85,25 @@ struct FavoritesFlow: View {
 struct FavoriteRow: View {
     let favorite: FavoriteName
 
-    private var dateLabel: String {
-        let calendar = Calendar.current
-        let now = Date()
+    private var style: String? {
+        if favorite.meaning.hasPrefix("Classic") { "Classic" }
+        else if favorite.meaning.hasPrefix("Modern") { "Modern" }
+        else if favorite.meaning.hasPrefix("Unique") { "Unique" }
+        else { nil }
+    }
 
-        if calendar.isDateInToday(favorite.createdAt) {
-            let formatter = DateFormatter()
-            formatter.dateFormat = "HH:mm"
-            return formatter.string(from: favorite.createdAt)
-        } else if calendar.isDateInYesterday(favorite.createdAt) {
-            return "昨天"
-        } else if calendar.isDate(favorite.createdAt, equalTo: now, toGranularity: .weekOfYear) {
-            let formatter = DateFormatter()
-            formatter.locale = Locale(identifier: "zh_CN")
-            formatter.dateFormat = "EEE"
-            return formatter.string(from: favorite.createdAt)
-        } else {
-            let formatter = DateFormatter()
-            formatter.dateFormat = "M/d"
-            return formatter.string(from: favorite.createdAt)
+    private var styleColor: Color {
+        switch style {
+        case "Classic": .orange
+        case "Modern": .blue
+        case "Unique": .purple
+        default: .gray
         }
+    }
+
+    private var cleanMeaning: String {
+        guard let style else { return favorite.meaning }
+        return String(favorite.meaning.dropFirst(style.count + 2))
     }
 
     var body: some View {
@@ -149,24 +115,18 @@ struct FavoriteRow: View {
                 Text(favorite.pinyin)
                     .font(.system(size: 13))
                     .foregroundStyle(.secondary)
-                Text(favorite.meaning)
-                    .font(.system(size: 13))
-                    .foregroundStyle(.tertiary)
-                    .lineLimit(1)
+                HStack(spacing: 4) {
+                    if style != nil {
+                        Image(systemName: "circle.fill")
+                            .font(.system(size: 8))
+                            .foregroundStyle(styleColor)
+                    }
+                    Text(cleanMeaning)
+                        .font(.system(size: 13))
+                        .foregroundStyle(.tertiary)
+                        .lineLimit(1)
+                }
             }
-
-            Spacer()
-
-            Text(dateLabel)
-                .font(.system(size: 11, weight: .medium))
-                .foregroundStyle(.tertiary)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(Color(.tertiarySystemBackground))
-                .clipShape(.rect(cornerRadius: 4))
         }
-        .padding(16)
-        .background(Color(.secondarySystemBackground))
-        .clipShape(.rect(cornerRadius: 10))
     }
 }

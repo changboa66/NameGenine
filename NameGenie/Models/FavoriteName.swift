@@ -18,6 +18,7 @@ final class FavoriteName {
     }
 }
 
+@available(*, deprecated, message: "Use DayGroup with groupedByDay() instead")
 enum DateGroup: Comparable {
     case today
     case yesterday
@@ -34,7 +35,52 @@ enum DateGroup: Comparable {
     }
 }
 
+struct DayGroup: Identifiable {
+    let date: Date
+    let items: [FavoriteName]
+
+    var id: String {
+        dateKey
+    }
+
+    var dateKey: String {
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.year, .month, .day], from: date)
+        return String(format: "%04d-%02d-%02d", components.year ?? 0, components.month ?? 0, components.day ?? 0)
+    }
+
+    var displayDate: String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "MMMM d"
+        return formatter.string(from: date)
+    }
+}
+
 extension Array where Element == FavoriteName {
+    func groupedByDay() -> [DayGroup] {
+        let calendar = Calendar.current
+        var groups: [String: [FavoriteName]] = [:]
+
+        for favorite in self {
+            let components = calendar.dateComponents([.year, .month, .day], from: favorite.createdAt)
+            let key = String(format: "%04d-%02d-%02d", components.year ?? 0, components.month ?? 0, components.day ?? 0)
+            groups[key, default: []].append(favorite)
+        }
+
+        return groups
+            .compactMap { key, items in
+                guard let date = calendar.date(from: DateComponents(
+                    year: Int(key.prefix(4)),
+                    month: Int(key.dropFirst(5).prefix(2)),
+                    day: Int(key.suffix(2))
+                )) else { return nil }
+                return DayGroup(date: date, items: items)
+            }
+            .sorted { $0.date > $1.date }
+    }
+
+    @available(*, deprecated, message: "Use groupedByDay() instead")
     func groupedByDate() -> [(DateGroup, [FavoriteName])] {
         let calendar = Calendar.current
         var groups: [DateGroup: [FavoriteName]] = [:]
